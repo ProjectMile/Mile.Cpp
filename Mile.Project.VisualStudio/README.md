@@ -1,10 +1,10 @@
-﻿# Mile.Project.Cpp.VisualStudio
+﻿# Mile.Project.VisualStudio
 
-Mile.Project.Cpp.VisualStudio is a configuration template for defining Visual
+Mile.Project.VisualStudio is a configuration template for defining Visual
 Studio (MSBuild) C++ projects. It can help us to simplify the definition of 
 Visual Studio (MSBuild) C++ projects.
 
-Mile.Project.Cpp.VisualStudio is also one of the Mile.Cpp family project.
+Mile.Project.VisualStudio is also one of the Mile.Cpp family project.
 
 ## Files
 
@@ -46,7 +46,7 @@ Mile.Project.Properties.h.
 
 ## Example
 
-Here is a template project for integrating the Mile.Project.Cpp.VisualStudio 
+Here is a template project for integrating the Mile.Project.VisualStudio 
 with [VC-LTL](https://github.com/Chuyu-Team/VC-LTL) support.
 
 P.S. You need to copy the files mentioned in [Files](#Files) to 
