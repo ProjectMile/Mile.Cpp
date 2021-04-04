@@ -9,7 +9,7 @@ Mile.Project.VisualStudio is also one of the Mile.Cpp family project.
 ## Files
 
 ```
-- Mile.Project
+- Mile.Project.VisualStudio
   - Mile.Project.Cpp.props
   - Mile.Project.Cpp.targets
   - Mile.Project.Cpp.VC-LTL.props
@@ -63,8 +63,8 @@ P.S. You need to copy the files mentioned in [Files](#Files) to
     <MileProjectType>ConsoleApplication</MileProjectType>
     <MileProjectManifestFile>SimpleProject.manifest</MileProjectManifestFile>
   </PropertyGroup>
-  <Import Project="..\Mile.Project\Mile.Project.Cpp.props" />
-  <Import Project="..\Mile.Project\Mile.Project.Cpp.VC-LTL.props" />
+  <Import Project="..\Mile.Project.VisualStudio\Mile.Project.Cpp.props" />
+  <Import Project="..\Mile.Project.VisualStudio\Mile.Project.Cpp.VC-LTL.props" />
   <ItemGroup>
     <ClCompile Include="SimpleProject.cpp" />
   </ItemGroup>
@@ -74,7 +74,7 @@ P.S. You need to copy the files mentioned in [Files](#Files) to
   <ItemGroup>
     <ClInclude Include="Mile.Project.Properties.h" />
   </ItemGroup>
-  <Import Project="..\Mile.Project\Mile.Project.Cpp.targets" />
+  <Import Project="..\Mile.Project.VisualStudio\Mile.Project.Cpp.targets" />
 </Project>
 ```
 
