@@ -33,6 +33,8 @@ Mile.Project.VisualStudio is also one of the Mile.Cpp family project.
   Please use `<MileProjectType>DynamicLibrary</MileProjectType>`.
 - If the project is a static library project.
   Please use `<MileProjectType>StaticLibrary</MileProjectType>`.
+- If the project is a UEFI application project.
+  Please use `<MileProjectType>UefiApplication</MileProjectType>`.
 
 ### How to define the manifest file in the "Globals" label property group.
 
