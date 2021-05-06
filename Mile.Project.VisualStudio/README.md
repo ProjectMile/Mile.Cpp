@@ -19,6 +19,8 @@ Mile.Project.VisualStudio is also one of the Mile.Cpp family project.
   - Mile.Project.Version.rc
 - .editorconfig
 - .gitignore
+- BuildAllTargets.cmd
+- BuildAllTargets.proj
 ```
 
 ## Usages
