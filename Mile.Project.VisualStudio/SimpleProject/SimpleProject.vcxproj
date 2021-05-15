@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F3E82C07-D4FD-45AD-9C7C-29C7FC210158}</ProjectGuid>
+    <RootNamespace>SimpleProject</RootNamespace>
+    <MileProjectType>WindowsApplication</MileProjectType>
+    <MileProjectManifestFile>SimpleProject.manifest</MileProjectManifestFile>
+  </PropertyGroup>
+  <Import Project="..\Mile.Project.VisualStudio\Mile.Project.Cpp.props" />
+  <Import Project="..\Mile.Project.VisualStudio\Mile.Project.Cpp.VC-LTL.props" />
+  <ItemGroup>
+    <ClCompile Include="SimpleProject.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="SimpleProject.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Mile.Project.Properties.h" />
+  </ItemGroup>
+  <Import Project="..\Mile.Project.VisualStudio\Mile.Project.Cpp.targets" />
+</Project>
