@@ -18,58 +18,82 @@ namespace
 {
     const int PiConsoleInputEditControlHeight = 24;
 
-    HWND PiConsoleGetOutputEditControl(
+    struct PiConsoleInformation
+    {
+        SIZE_T Size;
+        int WindowDpi;
+        int InputEditHeight;
+        HANDLE InputSignal;
+        HWND InputEdit;
+        HWND OutputEdit;
+    };
+
+    PiConsoleInformation* PiConsoleGetInformation(
         _In_ HWND WindowHandle)
     {
-        HWND Current = ::GetWindow(WindowHandle, GW_CHILD);
-
-        do
+        PiConsoleInformation* ConsoleInformation =
+            reinterpret_cast<PiConsoleInformation*>(
+                ::GetWindowLongPtrW(WindowHandle, GWLP_USERDATA));
+        if (ConsoleInformation)
         {
-            wchar_t ClassName[256] = { 0 };
-            if (::GetClassNameW(Current, ClassName, 256))
+            if (ConsoleInformation->Size == sizeof(PiConsoleInformation))
             {
-                if (std::wcscmp(ClassName, L"Edit") == 0)
-                {
-                    if (ES_READONLY & ::GetWindowLongPtrW(
-                        Current, GWL_STYLE))
-                    {
-                        return Current;
-                    }
-                }
+                return ConsoleInformation;
             }
-
-            Current = ::GetWindow(Current, GW_HWNDNEXT);
-
-        } while (Current);
+        }
 
         return nullptr;
     }
 
-    HWND PiConsoleGetInputEditControl(
-        _In_ HWND WindowHandle)
+    void PiConsoleChangeFont(
+        _In_ HWND WindowHandle,
+        _In_ int FontSize)
     {
-        HWND Current = ::GetWindow(WindowHandle, GW_CHILD);
-
-        do
+        PiConsoleInformation* ConsoleInformation =
+            ::PiConsoleGetInformation(WindowHandle);
+        if (ConsoleInformation)
         {
-            wchar_t ClassName[256] = { 0 };
-            if (::GetClassNameW(Current, ClassName, 256))
+            HFONT FontHandle = ::CreateFontW(
+                -::MulDiv(
+                    FontSize,
+                    ConsoleInformation->WindowDpi,
+                    USER_DEFAULT_SCREEN_DPI),
+                0,
+                0,
+                0,
+                FW_NORMAL,
+                false,
+                false,
+                false,
+                DEFAULT_CHARSET,
+                OUT_CHARACTER_PRECIS,
+                CLIP_CHARACTER_PRECIS,
+                CLEARTYPE_NATURAL_QUALITY,
+                FF_MODERN,
+                L"MS Shell Dlg");
+            if (FontHandle)
             {
-                if (std::wcscmp(ClassName, L"Edit") == 0)
-                {
-                    if (!(ES_READONLY &::GetWindowLongPtrW(
-                        Current, GWL_STYLE)))
-                    {
-                        return Current;
-                    }
-                }
+                ::SendMessageW(
+                    WindowHandle,
+                    WM_SETFONT,
+                    reinterpret_cast<WPARAM>(FontHandle),
+                    TRUE);
+
+                ::SendMessageW(
+                    ConsoleInformation->InputEdit,
+                    WM_SETFONT,
+                    reinterpret_cast<WPARAM>(FontHandle),
+                    TRUE);
+
+                ::SendMessageW(
+                    ConsoleInformation->OutputEdit,
+                    WM_SETFONT,
+                    reinterpret_cast<WPARAM>(FontHandle),
+                    TRUE);
+
+                ::DeleteObject(FontHandle);
             }
-
-            Current = ::GetWindow(Current, GW_HWNDNEXT);
-
-        } while (Current);
-
-        return nullptr;
+        }
     }
 
     void PiConsoleSetTextCursorPositionToEnd(
@@ -101,25 +125,6 @@ namespace
         ::PiConsoleSetTextCursorPositionToEnd(
             EditControlHandle);
     }
-
-    int PiConsoleGetWindowDpi(
-        _In_ HWND WindowHandle)
-    {
-        int xDPI = USER_DEFAULT_SCREEN_DPI;
-        int yDPI = USER_DEFAULT_SCREEN_DPI;
-
-        if (S_OK != Mile::GetDpiForMonitor(
-            ::MonitorFromWindow(WindowHandle, MONITOR_DEFAULTTONEAREST),
-            MDT_EFFECTIVE_DPI,
-            reinterpret_cast<UINT*>(&xDPI),
-            reinterpret_cast<UINT*>(&yDPI)))
-        {
-            xDPI = ::GetDeviceCaps(::GetDC(WindowHandle), LOGPIXELSX);
-            yDPI = ::GetDeviceCaps(::GetDC(WindowHandle), LOGPIXELSY);
-        }
-
-        return xDPI;
-    }
 }
 
 HWND Mile::CreatePiConsole(
@@ -129,36 +134,23 @@ HWND Mile::CreatePiConsole(
     _In_ DWORD ShowWindowMode)
 {
     bool Result = false;
-    HWND WindowHandle = nullptr;
+    HWND OutputWindowHandle = nullptr;
     HANDLE CompletedEventHandle = nullptr;
-    HANDLE InputCompletedEventHandle = nullptr;
     HANDLE WindowThreadHandle = nullptr;
-    HWND InputEditControlHandle = nullptr;
-    HWND OutputEditControlHandle = nullptr;
 
     auto ExitHandler = Mile::ScopeExitTaskHandler([&]()
     {
-        if (CompletedEventHandle)
-        {
-            ::CloseHandle(CompletedEventHandle);
-        }
-
         if (WindowThreadHandle)
         {
             ::CloseHandle(WindowThreadHandle);
         }
 
-        if (!Result)
+        if (!Result) 
         {
-            if (InputCompletedEventHandle)
+            if (CompletedEventHandle)
             {
-                ::CloseHandle(InputCompletedEventHandle);
+                ::CloseHandle(CompletedEventHandle);
             }
-
-            ::DestroyWindow(WindowHandle);
-            ::DestroyWindow(InputEditControlHandle);
-            ::DestroyWindow(OutputEditControlHandle);         
-            WindowHandle = nullptr;
         }
     });
 
@@ -172,39 +164,39 @@ HWND Mile::CreatePiConsole(
         {
         case WM_SIZE:
         {
-            int WindowDpi = ::PiConsoleGetWindowDpi(hWnd);
-
-            int RealPiConsoleInputEditControlHeight = ::MulDiv(
-                PiConsoleInputEditControlHeight,
-                WindowDpi,
-                USER_DEFAULT_SCREEN_DPI);
-
-            HWND InputEditControlHandle =
-                ::PiConsoleGetInputEditControl(hWnd);
-            if (InputEditControlHandle)
+            PiConsoleInformation* ConsoleInformation =
+                ::PiConsoleGetInformation(hWnd);
+            if (ConsoleInformation)
             {
-                ::SetWindowPos(
-                    InputEditControlHandle,
-                    nullptr,
-                    0,
-                    HIWORD(lParam) - RealPiConsoleInputEditControlHeight,
-                    LOWORD(lParam),
+                int RealInputEditHeight = ::MulDiv(
                     PiConsoleInputEditControlHeight,
-                    0);
-            }
+                    ConsoleInformation->WindowDpi,
+                    USER_DEFAULT_SCREEN_DPI);
 
-            HWND OutputEditControlHandle =
-                ::PiConsoleGetOutputEditControl(hWnd);
-            if (OutputEditControlHandle)
-            {
-                ::SetWindowPos(
-                    OutputEditControlHandle,
-                    nullptr,
-                    0,
-                    0,
-                    LOWORD(lParam),
-                    HIWORD(lParam) - RealPiConsoleInputEditControlHeight,
-                    0);
+                if (ConsoleInformation->InputEdit)
+                {
+                    ::SetWindowPos(
+                        ConsoleInformation->InputEdit,
+                        nullptr,
+                        0,
+                        HIWORD(lParam) - RealInputEditHeight,
+                        LOWORD(lParam),
+                        PiConsoleInputEditControlHeight,
+                        0);
+                }
+
+                if (ConsoleInformation->OutputEdit)
+                {
+                    ::SetWindowPos(
+                        ConsoleInformation->OutputEdit,
+                        nullptr,
+                        0,
+                        0,
+                        LOWORD(lParam),
+                        HIWORD(lParam) - RealInputEditHeight,
+                        0);
+                }
+
             }
 
             ::UpdateWindow(hWnd);
@@ -213,51 +205,14 @@ HWND Mile::CreatePiConsole(
         }
         case WM_DPICHANGED:
         {
-            int WindowDpi = HIWORD(wParam);
-
-            HFONT FontHandle = ::CreateFontW(
-                -::MulDiv(16, WindowDpi, USER_DEFAULT_SCREEN_DPI),
-                0,
-                0,
-                0,
-                FW_NORMAL,
-                false,
-                false,
-                false,
-                DEFAULT_CHARSET,
-                OUT_CHARACTER_PRECIS,
-                CLIP_CHARACTER_PRECIS,
-                CLEARTYPE_NATURAL_QUALITY,
-                FF_MODERN,
-                L"MS Shell Dlg");
-
-            ::SendMessageW(
-                hWnd,
-                WM_SETFONT,
-                reinterpret_cast<WPARAM>(FontHandle),
-                TRUE);
-
-            HWND InputEditControlHandle =
-                ::PiConsoleGetInputEditControl(hWnd);
-            if (InputEditControlHandle)
+            PiConsoleInformation* ConsoleInformation =
+                ::PiConsoleGetInformation(hWnd);
+            if (ConsoleInformation)
             {
-                ::SendMessageW(
-                    InputEditControlHandle,
-                    WM_SETFONT,
-                    reinterpret_cast<WPARAM>(FontHandle),
-                    TRUE);
+                ConsoleInformation->WindowDpi = HIWORD(wParam);
             }
 
-            HWND OutputEditControlHandle =
-                ::PiConsoleGetOutputEditControl(hWnd);
-            if (OutputEditControlHandle)
-            {
-                ::SendMessageW(
-                    OutputEditControlHandle,
-                    WM_SETFONT,
-                    reinterpret_cast<WPARAM>(FontHandle),
-                    TRUE);
-            }
+            ::PiConsoleChangeFont(hWnd, 16);
 
             auto lprcNewScale = reinterpret_cast<RECT*>(lParam);
 
@@ -276,16 +231,7 @@ HWND Mile::CreatePiConsole(
         }
         case WM_DESTROY:
         {
-            ::CloseHandle(reinterpret_cast<HANDLE>(
-                ::GetWindowLongPtrW(hWnd, GWL_USERDATA)));
-
-            ::SetWindowLongPtrW(
-                hWnd,
-                GWL_USERDATA,
-                reinterpret_cast<LONG>(nullptr));
-
             ::PostQuitMessage(0);
-
             break;
         }
         default:
@@ -305,18 +251,59 @@ HWND Mile::CreatePiConsole(
         return nullptr;
     }
 
-    InputCompletedEventHandle = ::CreateEventExW(
-        nullptr,
-        nullptr,
-        0,
-        EVENT_ALL_ACCESS);
-    if (!CompletedEventHandle)
-    {
-        return nullptr;
-    }
-
     WindowThreadHandle = Mile::CreateThread([&]()
     {
+        HWND WindowHandle = nullptr;
+        PiConsoleInformation* ConsoleInformation = nullptr;
+
+        auto WindowThreadExitHandler = Mile::ScopeExitTaskHandler([&]()
+        {
+            if (WindowHandle)
+            {
+                ::DestroyWindow(WindowHandle);
+            }
+
+            if (ConsoleInformation)
+            {
+                if (ConsoleInformation->InputSignal)
+                {
+                    ::CloseHandle(ConsoleInformation->InputSignal);
+                }
+
+                if (ConsoleInformation->InputEdit)
+                {
+                    ::DestroyWindow(ConsoleInformation->InputEdit);
+                }
+
+                if (ConsoleInformation->OutputEdit)
+                {
+                    ::DestroyWindow(ConsoleInformation->OutputEdit);
+                }
+
+                Mile::HeapMemory::Free(ConsoleInformation);
+                ConsoleInformation = nullptr;
+            }
+        });
+
+        ConsoleInformation = reinterpret_cast<PiConsoleInformation*>(
+            Mile::HeapMemory::Allocate(sizeof(PiConsoleInformation)));
+        if (!ConsoleInformation)
+        {
+            return;
+        }
+
+        ConsoleInformation->Size = sizeof(PiConsoleInformation);
+
+        ConsoleInformation->InputSignal = ::CreateEventExW(
+            nullptr,
+            nullptr,
+            CREATE_EVENT_INITIAL_SET,
+            EVENT_ALL_ACCESS);
+        if (!ConsoleInformation->InputSignal)
+        {
+            return;
+        }
+
         Mile::EnablePerMonitorDialogScaling();
 
         WNDCLASSEXW WindowClass;
@@ -337,10 +324,10 @@ HWND Mile::CreatePiConsole(
         {
             ::SetEvent(CompletedEventHandle);
             return;
-        }     
+        }
 
         WindowHandle = ::CreateWindowExW(
-            WS_EX_APPWINDOW,
+            WS_EX_CONTROLPARENT,
             WindowClass.lpszClassName,
             WindowTitle,
             WS_OVERLAPPEDWINDOW,
@@ -356,12 +343,12 @@ HWND Mile::CreatePiConsole(
         {
             ::SetEvent(CompletedEventHandle);
             return;
-        }
+        } 
 
         ::SetWindowLongPtrW(
             WindowHandle,
-            GWL_USERDATA,
-            reinterpret_cast<LONG>(InputCompletedEventHandle));
+            GWLP_USERDATA,
+            reinterpret_cast<LONG_PTR>(ConsoleInformation));
 
         Mile::EnableChildWindowDpiMessage(WindowHandle);
 
@@ -372,105 +359,86 @@ HWND Mile::CreatePiConsole(
             return;
         }
 
-        int WindowDpi = ::PiConsoleGetWindowDpi(WindowHandle);
+        int xDPI = USER_DEFAULT_SCREEN_DPI;
+        int yDPI = USER_DEFAULT_SCREEN_DPI;
+        if (S_OK != Mile::GetDpiForMonitor(
+            ::MonitorFromWindow(WindowHandle, MONITOR_DEFAULTTONEAREST),
+            MDT_EFFECTIVE_DPI,
+            reinterpret_cast<UINT*>(&xDPI),
+            reinterpret_cast<UINT*>(&yDPI)))
+        {
+            xDPI = ::GetDeviceCaps(::GetDC(WindowHandle), LOGPIXELSX);
+            yDPI = ::GetDeviceCaps(::GetDC(WindowHandle), LOGPIXELSY);
+        }
+        ConsoleInformation->WindowDpi = xDPI;
 
-        int RealPiConsoleInputEditControlHeight = ::MulDiv(
+        int RealInputEditHeight = ::MulDiv(
             PiConsoleInputEditControlHeight,
-            WindowDpi,
+            ConsoleInformation->WindowDpi,
             USER_DEFAULT_SCREEN_DPI);
 
-        OutputEditControlHandle = ::CreateWindowExW(
+        const DWORD ControlCommonStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP;
+
+        ConsoleInformation->OutputEdit = ::CreateWindowExW(
             0,
             L"Edit",
             L"",
-            ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_CHILD | WS_VISIBLE,
+            ES_MULTILINE | ES_READONLY | WS_VSCROLL | ControlCommonStyle,
             0,
             0,
             ClientRectangle.right,
-            ClientRectangle.bottom - RealPiConsoleInputEditControlHeight,
+            ClientRectangle.bottom - RealInputEditHeight,
             WindowHandle,
             nullptr,
             WindowClass.hInstance,
             nullptr);
-        if (!OutputEditControlHandle)
+        if (!ConsoleInformation->OutputEdit)
         {
             ::SetEvent(CompletedEventHandle);
             return;
         }
 
-        InputEditControlHandle = ::CreateWindowExW(
+        ConsoleInformation->InputEdit = ::CreateWindowExW(
             0,
             L"Edit",
             L"",
-            WS_CHILD | WS_VISIBLE,
+            ES_READONLY | ControlCommonStyle,
             0,
-            ClientRectangle.bottom - RealPiConsoleInputEditControlHeight,
+            ClientRectangle.bottom - RealInputEditHeight,
             ClientRectangle.right,
-            RealPiConsoleInputEditControlHeight,
+            RealInputEditHeight,
             WindowHandle,
             nullptr,
             WindowClass.hInstance,
             nullptr);
-        if (!InputEditControlHandle)
+        if (!ConsoleInformation->InputEdit)
         {
             ::SetEvent(CompletedEventHandle);
             return;
         }
 
-        ::SendMessageW(
-            InputEditControlHandle,
-            EM_SETCUEBANNER,
-            FALSE,
-            reinterpret_cast<LPARAM>(L"请在此输入命令并回车"));
-
-        HFONT FontHandle = ::CreateFontW(
-            -::MulDiv(16, WindowDpi, USER_DEFAULT_SCREEN_DPI),
-            0,
-            0,
-            0,
-            FW_NORMAL,
-            false,
-            false,
-            false,
-            DEFAULT_CHARSET,
-            OUT_CHARACTER_PRECIS,
-            CLIP_CHARACTER_PRECIS,
-            CLEARTYPE_NATURAL_QUALITY,
-            FF_MODERN,
-            L"MS Shell Dlg");
-
-        ::SendMessageW(
-            WindowHandle,
-            WM_SETFONT,
-            reinterpret_cast<WPARAM>(FontHandle),
-            TRUE);
-
-        ::SendMessageW(
-            InputEditControlHandle,
-            WM_SETFONT,
-            reinterpret_cast<WPARAM>(FontHandle),
-            TRUE);
-
-        ::SendMessageW(
-            OutputEditControlHandle,
-            WM_SETFONT,
-            reinterpret_cast<WPARAM>(FontHandle),
-            TRUE);
-
-        ::DeleteObject(FontHandle);
+        ::PiConsoleChangeFont(WindowHandle, 16);
 
         ::ShowWindow(WindowHandle, ShowWindowMode);
         ::UpdateWindow(WindowHandle);
 
+        OutputWindowHandle = WindowHandle;
         Result = true;
-
         ::SetEvent(CompletedEventHandle);
 
         MSG Message;
         while (::GetMessageW(&Message, nullptr, 0, 0))
         {
-            ::TranslateMessage(&Message);
-            ::DispatchMessageW(&Message);
+            if (Message.message == WM_KEYDOWN && Message.wParam == VK_RETURN)
+            {
+                ::SetEvent(ConsoleInformation->InputSignal);
+            }
+
+            if (!::IsDialogMessageW(WindowHandle, &Message))
+            {
+                ::TranslateMessage(&Message);
+                ::DispatchMessageW(&Message);
+            }
         }
 
     });
@@ -481,16 +449,102 @@ HWND Mile::CreatePiConsole(
 
     ::WaitForSingleObjectEx(CompletedEventHandle, INFINITE, FALSE);
 
-    return WindowHandle;
+    return OutputWindowHandle;
 }
 
 void Mile::PrintMessageToPiConsole(
     _In_ HWND WindowHandle,
     _In_ LPCWSTR Content)
 {
-    HWND EditControlHandle = ::PiConsoleGetOutputEditControl(WindowHandle);
-    if (EditControlHandle)
+    PiConsoleInformation* ConsoleInformation =
+        ::PiConsoleGetInformation(WindowHandle);
+    if (ConsoleInformation)
     {
-        ::PiConsoleAppendString(EditControlHandle, Content);
+        ::PiConsoleAppendString(
+            ConsoleInformation->OutputEdit,
+            Content);
     }
+}
+
+LPCWSTR Mile::GetInputFromPiConsole(
+    _In_ HWND WindowHandle,
+    _In_ LPCWSTR InputPrompt)
+{
+    bool Result = false;
+    wchar_t* InputBuffer = nullptr;
+    PiConsoleInformation* ConsoleInformation = nullptr;
+
+    auto ExitHandler = Mile::ScopeExitTaskHandler([&]()
+    {
+        if (ConsoleInformation)
+        {
+            ::SendMessageW(
+                ConsoleInformation->InputEdit,
+                EM_SETREADONLY,
+                TRUE,
+                0);
+            ::SetWindowTextW(
+                ConsoleInformation->InputEdit,
+                L"");
+            ::SendMessageW(
+                ConsoleInformation->InputEdit,
+                EM_SETCUEBANNER,
+                FALSE,
+                0);
+        }
+
+        if (!Result)
+        {
+            if (InputBuffer)
+            {
+                Mile::HeapMemory::Free(InputBuffer);
+                InputBuffer = nullptr;
+            }
+        }
+    });
+
+    ConsoleInformation = ::PiConsoleGetInformation(WindowHandle);
+    if (!ConsoleInformation)
+    {
+        return nullptr;
+    }
+
+    ::SendMessageW(
+        ConsoleInformation->InputEdit,
+        EM_SETCUEBANNER,
+        FALSE,
+        reinterpret_cast<LPARAM>(InputPrompt));
+    ::SendMessageW(
+        ConsoleInformation->InputEdit,
+        EM_SETREADONLY,
+        FALSE,
+        0);
+
+    if (!::ResetEvent(
+        ConsoleInformation->InputSignal))
+    {
+        return nullptr;
+    }
+
+    ::WaitForSingleObjectEx(
+        ConsoleInformation->InputSignal,
+        INFINITE,
+        FALSE);
+
+    int TextLength = ::GetWindowTextLengthW(
+        ConsoleInformation->InputEdit);
+    if (TextLength)
+    {
+        InputBuffer = reinterpret_cast<wchar_t*>(
+            Mile::HeapMemory::Allocate(TextLength + 1));
+        if (InputBuffer)
+        {
+            Result = ::GetWindowTextW(
+                ConsoleInformation->InputEdit,
+                InputBuffer,
+                TextLength + 1);
+        }
+    }
+
+    return InputBuffer;
 }

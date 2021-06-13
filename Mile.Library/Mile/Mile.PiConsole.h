@@ -24,6 +24,10 @@ namespace Mile
     void PrintMessageToPiConsole(
         _In_ HWND WindowHandle,
         _In_ LPCWSTR Content);
+
+    LPCWSTR GetInputFromPiConsole(
+        _In_ HWND WindowHandle,
+        _In_ LPCWSTR InputPrompt);
 }
 
 #endif // !MILE_PI_CONSOLE
