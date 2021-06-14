@@ -133,7 +133,6 @@ HWND Mile::CreatePiConsole(
     _In_ LPCWSTR WindowTitle,
     _In_ DWORD ShowWindowMode)
 {
-    bool Result = false;
     HWND OutputWindowHandle = nullptr;
     HANDLE CompletedEventHandle = nullptr;
     HANDLE WindowThreadHandle = nullptr;
@@ -145,12 +144,9 @@ HWND Mile::CreatePiConsole(
             ::CloseHandle(WindowThreadHandle);
         }
 
-        if (!Result) 
+        if (CompletedEventHandle)
         {
-            if (CompletedEventHandle)
-            {
-                ::CloseHandle(CompletedEventHandle);
-            }
+            ::CloseHandle(CompletedEventHandle);
         }
     });
 
@@ -253,11 +249,17 @@ HWND Mile::CreatePiConsole(
 
     WindowThreadHandle = Mile::CreateThread([&]()
     {
+        bool Result = false;
         HWND WindowHandle = nullptr;
         PiConsoleInformation* ConsoleInformation = nullptr;
 
         auto WindowThreadExitHandler = Mile::ScopeExitTaskHandler([&]()
         {
+            if (!Result)
+            {
+                ::SetEvent(CompletedEventHandle);
+            }
+
             if (WindowHandle)
             {
                 ::DestroyWindow(WindowHandle);
@@ -267,6 +269,7 @@ HWND Mile::CreatePiConsole(
             {
                 if (ConsoleInformation->InputSignal)
                 {
+                    ::SetEvent(ConsoleInformation->InputSignal);
                     ::CloseHandle(ConsoleInformation->InputSignal);
                 }
 
@@ -322,15 +325,14 @@ HWND Mile::CreatePiConsole(
 
         if (!::RegisterClassExW(&WindowClass))
         {
-            ::SetEvent(CompletedEventHandle);
             return;
         }
 
         WindowHandle = ::CreateWindowExW(
-            WS_EX_CONTROLPARENT,
+            WS_EX_APPWINDOW | WS_EX_WINDOWEDGE | WS_EX_CONTROLPARENT,
             WindowClass.lpszClassName,
             WindowTitle,
-            WS_OVERLAPPEDWINDOW,
+            WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
             CW_USEDEFAULT,
             0,
             640,
@@ -341,7 +343,6 @@ HWND Mile::CreatePiConsole(
             nullptr);
         if (!WindowHandle)
         {
-            ::SetEvent(CompletedEventHandle);
             return;
         } 
 
@@ -355,7 +356,6 @@ HWND Mile::CreatePiConsole(
         RECT ClientRectangle;
         if (!::GetClientRect(WindowHandle, &ClientRectangle))
         {
-            ::SetEvent(CompletedEventHandle);
             return;
         }
 
@@ -394,7 +394,6 @@ HWND Mile::CreatePiConsole(
             nullptr);
         if (!ConsoleInformation->OutputEdit)
         {
-            ::SetEvent(CompletedEventHandle);
             return;
         }
 
@@ -413,7 +412,6 @@ HWND Mile::CreatePiConsole(
             nullptr);
         if (!ConsoleInformation->InputEdit)
         {
-            ::SetEvent(CompletedEventHandle);
             return;
         }
 
@@ -423,8 +421,8 @@ HWND Mile::CreatePiConsole(
         ::UpdateWindow(WindowHandle);
 
         OutputWindowHandle = WindowHandle;
-        Result = true;
         ::SetEvent(CompletedEventHandle);
+        Result = true;
 
         MSG Message;
         while (::GetMessageW(&Message, nullptr, 0, 0))
@@ -433,14 +431,12 @@ HWND Mile::CreatePiConsole(
             {
                 ::SetEvent(ConsoleInformation->InputSignal);
             }
-
-            if (!::IsDialogMessageW(WindowHandle, &Message))
+            else if (!::IsDialogMessageW(WindowHandle, &Message))
             {
                 ::TranslateMessage(&Message);
                 ::DispatchMessageW(&Message);
             }
         }
-
     });
     if (!WindowThreadHandle)
     {
@@ -489,7 +485,7 @@ LPCWSTR Mile::GetInputFromPiConsole(
             ::SendMessageW(
                 ConsoleInformation->InputEdit,
                 EM_SETCUEBANNER,
-                FALSE,
+                TRUE,
                 0);
         }
 
@@ -512,7 +508,7 @@ LPCWSTR Mile::GetInputFromPiConsole(
     ::SendMessageW(
         ConsoleInformation->InputEdit,
         EM_SETCUEBANNER,
-        FALSE,
+        TRUE,
         reinterpret_cast<LPARAM>(InputPrompt));
     ::SendMessageW(
         ConsoleInformation->InputEdit,
