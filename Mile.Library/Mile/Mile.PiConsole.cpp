@@ -13,7 +13,6 @@
 #include <CommCtrl.h>
 
 #include <cstdint>
-#include <string>
 
 namespace
 {
@@ -46,6 +45,25 @@ namespace
         return nullptr;
     }
 
+    void PiConsoleSetFocus(
+        _In_ HWND WindowHandle)
+    {
+        PiConsoleInformation* ConsoleInformation =
+            ::PiConsoleGetInformation(WindowHandle);
+        if (ConsoleInformation)
+        {
+            int& InputEditHeight = ConsoleInformation->InputEditHeight;
+            HWND& FocusedEdit = ConsoleInformation->FocusedEdit;
+            HWND& InputEdit = ConsoleInformation->InputEdit;
+            HWND& OutputEdit = ConsoleInformation->OutputEdit;
+            FocusedEdit = (InputEditHeight != 0)
+                ? InputEdit
+                : OutputEdit;
+            ::SetForegroundWindow(FocusedEdit);
+            ::SetFocus(FocusedEdit) ? 'Y' : 'N';
+        }
+    }
+
     void PiConsoleRefreshLayout(
         _In_ HWND WindowHandle)
     {
@@ -63,11 +81,7 @@ namespace
                 SIZE_RESTORED,
                 (ClientHeight << 16) | ClientWidth);
 
-            ::PostMessageW(
-                WindowHandle,
-                WM_KEYDOWN,
-                VK_TAB,
-                0);
+            ::PiConsoleSetFocus(WindowHandle);
         }
     }
 
@@ -186,15 +200,14 @@ HWND Mile::PiConsole::Create(
         {
         case WM_SETFOCUS:
         {
-            ::PostMessageW(hWnd, WM_KEYDOWN, VK_TAB, 0);
-
+            ::PiConsoleSetFocus(hWnd);
             break;
         }
         case WM_ACTIVATE:
         {
-            if (LOWORD(wParam) == WA_INACTIVE)
+            if (LOWORD(wParam) != WA_INACTIVE)
             {
-                ::PostMessageW(hWnd, WM_KEYDOWN, VK_TAB, 0);
+                ::PiConsoleSetFocus(hWnd);
             }
 
             break;
@@ -521,7 +534,7 @@ void Mile::PiConsole::PrintMessage(
     }
 }
 
-LPCWSTR Mile::PiConsole::GetInput(
+LPWSTR Mile::PiConsole::GetInput(
     _In_ HWND WindowHandle,
     _In_ LPCWSTR InputPrompt)
 {
@@ -531,11 +544,11 @@ LPCWSTR Mile::PiConsole::GetInput(
 
     auto ExitHandler = Mile::ScopeExitTaskHandler([&]()
     {
-        ConsoleInformation->InputEditHeight = 0;
-        ::PiConsoleRefreshLayout(WindowHandle);
-
         if (ConsoleInformation)
         {
+            ConsoleInformation->InputEditHeight = 0;
+            ::PiConsoleRefreshLayout(WindowHandle);
+
             ::SendMessageW(
                 ConsoleInformation->InputEdit,
                 EM_SETREADONLY,

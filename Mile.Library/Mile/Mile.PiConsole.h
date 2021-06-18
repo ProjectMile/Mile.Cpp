@@ -64,7 +64,7 @@ namespace Mile
          * @return The user input. If the return value is not nullptr, you
          *         should use Mile::HeapMemory::Free to release.
         */
-        static LPCWSTR GetInput(
+        static LPWSTR GetInput(
             _In_ HWND WindowHandle,
             _In_ LPCWSTR InputPrompt);
 
