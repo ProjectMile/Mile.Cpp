@@ -129,7 +129,7 @@ namespace
     }
 }
 
-HWND Mile::CreatePiConsole(
+HWND Mile::PiConsole::Create(
     _In_ HINSTANCE InstanceHandle,
     _In_ HICON WindowIconHandle,
     _In_ LPCWSTR WindowTitle,
@@ -460,7 +460,7 @@ HWND Mile::CreatePiConsole(
     return OutputWindowHandle;
 }
 
-void Mile::PrintMessageToPiConsole(
+void Mile::PiConsole::PrintMessage(
     _In_ HWND WindowHandle,
     _In_ LPCWSTR Content)
 {
@@ -477,7 +477,7 @@ void Mile::PrintMessageToPiConsole(
     }
 }
 
-LPCWSTR Mile::GetInputFromPiConsole(
+LPCWSTR Mile::PiConsole::GetInput(
     _In_ HWND WindowHandle,
     _In_ LPCWSTR InputPrompt)
 {
