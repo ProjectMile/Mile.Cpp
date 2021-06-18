@@ -26,6 +26,7 @@ namespace
         HANDLE InputSignal;
         HWND InputEdit;
         HWND OutputEdit;
+        HWND FocusedEdit;
         CRITICAL_SECTION OperationLock;
     };
 
@@ -382,13 +383,11 @@ HWND Mile::CreatePiConsole(
             ConsoleInformation->WindowDpi,
             USER_DEFAULT_SCREEN_DPI);
 
-        const DWORD ControlCommonStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP;
-
         ConsoleInformation->OutputEdit = ::CreateWindowExW(
             0,
             L"Edit",
             L"",
-            ES_MULTILINE | ES_READONLY | WS_VSCROLL | ControlCommonStyle,
+            ES_MULTILINE | ES_READONLY | WS_VSCROLL | WS_CHILD | WS_VISIBLE,
             0,
             0,
             ClientRectangle.right,
@@ -406,7 +405,7 @@ HWND Mile::CreatePiConsole(
             0,
             L"Edit",
             L"",
-            ES_READONLY | ControlCommonStyle,
+            ES_READONLY | WS_CHILD | WS_VISIBLE,
             0,
             ClientRectangle.bottom - RealInputEditHeight,
             ClientRectangle.right,
@@ -436,11 +435,17 @@ HWND Mile::CreatePiConsole(
             {
                 ::SetEvent(ConsoleInformation->InputSignal);
             }
-            else if (!::IsDialogMessageW(WindowHandle, &Message))
+            else if (Message.message == WM_KEYDOWN && Message.wParam == VK_TAB)
             {
-                ::TranslateMessage(&Message);
-                ::DispatchMessageW(&Message);
+                HWND& FocusedEdit = ConsoleInformation->FocusedEdit;
+                HWND& InputEdit = ConsoleInformation->InputEdit;
+                HWND& OutputEdit = ConsoleInformation->OutputEdit;
+                FocusedEdit = (FocusedEdit != InputEdit) ? InputEdit : OutputEdit;
+                ::SetFocus(FocusedEdit);
             }
+
+            ::TranslateMessage(&Message);
+            ::DispatchMessageW(&Message);
         }
     });
     if (!WindowThreadHandle)
