@@ -26,6 +26,7 @@ namespace
         HANDLE InputSignal;
         HWND InputEdit;
         HWND OutputEdit;
+        CRITICAL_SECTION OperationLock;
     };
 
     PiConsoleInformation* PiConsoleGetInformation(
@@ -267,6 +268,8 @@ HWND Mile::CreatePiConsole(
 
             if (ConsoleInformation)
             {
+                ::DeleteCriticalSection(&ConsoleInformation->OperationLock);
+
                 if (ConsoleInformation->InputSignal)
                 {
                     ::SetEvent(ConsoleInformation->InputSignal);
@@ -296,6 +299,8 @@ HWND Mile::CreatePiConsole(
         }
 
         ConsoleInformation->Size = sizeof(PiConsoleInformation);
+
+        ::InitializeCriticalSection(&ConsoleInformation->OperationLock);
 
         ConsoleInformation->InputSignal = ::CreateEventExW(
             nullptr,
@@ -456,9 +461,13 @@ void Mile::PrintMessageToPiConsole(
         ::PiConsoleGetInformation(WindowHandle);
     if (ConsoleInformation)
     {
+        ::EnterCriticalSection(&ConsoleInformation->OperationLock);
+
         ::PiConsoleAppendString(
             ConsoleInformation->OutputEdit,
             Content);
+
+        ::LeaveCriticalSection(&ConsoleInformation->OperationLock);
     }
 }
 
@@ -487,6 +496,8 @@ LPCWSTR Mile::GetInputFromPiConsole(
                 EM_SETCUEBANNER,
                 TRUE,
                 0);
+
+            ::LeaveCriticalSection(&ConsoleInformation->OperationLock);
         }
 
         if (!Result)
@@ -504,6 +515,8 @@ LPCWSTR Mile::GetInputFromPiConsole(
     {
         return nullptr;
     }
+
+    ::EnterCriticalSection(&ConsoleInformation->OperationLock);
 
     ::SendMessageW(
         ConsoleInformation->InputEdit,
@@ -532,7 +545,7 @@ LPCWSTR Mile::GetInputFromPiConsole(
     if (TextLength)
     {
         InputBuffer = reinterpret_cast<wchar_t*>(
-            Mile::HeapMemory::Allocate(TextLength + 1));
+            Mile::HeapMemory::Allocate((TextLength + 1) * sizeof(wchar_t)));
         if (InputBuffer)
         {
             Result = ::GetWindowTextW(
