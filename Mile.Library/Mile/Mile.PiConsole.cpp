@@ -269,7 +269,8 @@ HWND Mile::CreatePiConsole(
 
             if (ConsoleInformation)
             {
-                ::DeleteCriticalSection(&ConsoleInformation->OperationLock);
+                Mile::CriticalSection::Delete(
+                    &ConsoleInformation->OperationLock);
 
                 if (ConsoleInformation->InputSignal)
                 {
@@ -301,7 +302,8 @@ HWND Mile::CreatePiConsole(
 
         ConsoleInformation->Size = sizeof(PiConsoleInformation);
 
-        ::InitializeCriticalSection(&ConsoleInformation->OperationLock);
+        Mile::CriticalSection::Initialize(
+            &ConsoleInformation->OperationLock);
 
         ConsoleInformation->InputSignal = ::CreateEventExW(
             nullptr,
@@ -466,13 +468,12 @@ void Mile::PrintMessageToPiConsole(
         ::PiConsoleGetInformation(WindowHandle);
     if (ConsoleInformation)
     {
-        ::EnterCriticalSection(&ConsoleInformation->OperationLock);
+        Mile::AutoRawCriticalSectionTryLock Guard(
+            ConsoleInformation->OperationLock);
 
         ::PiConsoleAppendString(
             ConsoleInformation->OutputEdit,
             Content);
-
-        ::LeaveCriticalSection(&ConsoleInformation->OperationLock);
     }
 }
 
@@ -501,8 +502,6 @@ LPCWSTR Mile::GetInputFromPiConsole(
                 EM_SETCUEBANNER,
                 TRUE,
                 0);
-
-            ::LeaveCriticalSection(&ConsoleInformation->OperationLock);
         }
 
         if (!Result)
@@ -521,7 +520,8 @@ LPCWSTR Mile::GetInputFromPiConsole(
         return nullptr;
     }
 
-    ::EnterCriticalSection(&ConsoleInformation->OperationLock);
+    Mile::AutoRawCriticalSectionTryLock Guard(
+        ConsoleInformation->OperationLock);
 
     ::SendMessageW(
         ConsoleInformation->InputEdit,
