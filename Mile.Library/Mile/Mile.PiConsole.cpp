@@ -12,12 +12,11 @@
 
 #include <CommCtrl.h>
 
+#include <cstdint>
 #include <string>
 
 namespace
 {
-    const int PiConsoleInputEditControlHeight = 24;
-
     struct PiConsoleInformation
     {
         SIZE_T Size;
@@ -45,6 +44,31 @@ namespace
         }
 
         return nullptr;
+    }
+
+    void PiConsoleRefreshLayout(
+        _In_ HWND WindowHandle)
+    {
+        RECT ClientRect;
+        if (::GetClientRect(WindowHandle, &ClientRect))
+        {
+            std::int16_t ClientWidth = static_cast<std::int16_t>(
+                ClientRect.right - ClientRect.left);
+            std::int16_t ClientHeight = static_cast<std::int16_t>(
+                ClientRect.bottom - ClientRect.top);
+
+            ::SendMessageW(
+                WindowHandle,
+                WM_SIZE,
+                SIZE_RESTORED,
+                (ClientHeight << 16) | ClientWidth);
+
+            ::PostMessageW(
+                WindowHandle,
+                WM_KEYDOWN,
+                VK_TAB,
+                0);
+        }
     }
 
     void PiConsoleChangeFont(
@@ -160,6 +184,21 @@ HWND Mile::PiConsole::Create(
     {
         switch (uMsg)
         {
+        case WM_SETFOCUS:
+        {
+            ::PostMessageW(hWnd, WM_KEYDOWN, VK_TAB, 0);
+
+            break;
+        }
+        case WM_ACTIVATE:
+        {
+            if (LOWORD(wParam) == WA_INACTIVE)
+            {
+                ::PostMessageW(hWnd, WM_KEYDOWN, VK_TAB, 0);
+            }
+
+            break;
+        }
         case WM_SIZE:
         {
             PiConsoleInformation* ConsoleInformation =
@@ -167,7 +206,7 @@ HWND Mile::PiConsole::Create(
             if (ConsoleInformation)
             {
                 int RealInputEditHeight = ::MulDiv(
-                    PiConsoleInputEditControlHeight,
+                    ConsoleInformation->InputEditHeight,
                     ConsoleInformation->WindowDpi,
                     USER_DEFAULT_SCREEN_DPI);
 
@@ -179,7 +218,7 @@ HWND Mile::PiConsole::Create(
                         0,
                         HIWORD(lParam) - RealInputEditHeight,
                         LOWORD(lParam),
-                        PiConsoleInputEditControlHeight,
+                        ConsoleInformation->InputEditHeight,
                         0);
                 }
 
@@ -301,6 +340,7 @@ HWND Mile::PiConsole::Create(
         }
 
         ConsoleInformation->Size = sizeof(PiConsoleInformation);
+        ConsoleInformation->InputEditHeight = 0;
 
         Mile::CriticalSection::Initialize(
             &ConsoleInformation->OperationLock);
@@ -381,7 +421,7 @@ HWND Mile::PiConsole::Create(
         ConsoleInformation->WindowDpi = xDPI;
 
         int RealInputEditHeight = ::MulDiv(
-            PiConsoleInputEditControlHeight,
+            ConsoleInformation->InputEditHeight,
             ConsoleInformation->WindowDpi,
             USER_DEFAULT_SCREEN_DPI);
 
@@ -439,10 +479,14 @@ HWND Mile::PiConsole::Create(
             }
             else if (Message.message == WM_KEYDOWN && Message.wParam == VK_TAB)
             {
+                int& InputEditHeight = ConsoleInformation->InputEditHeight;
                 HWND& FocusedEdit = ConsoleInformation->FocusedEdit;
                 HWND& InputEdit = ConsoleInformation->InputEdit;
                 HWND& OutputEdit = ConsoleInformation->OutputEdit;
-                FocusedEdit = (FocusedEdit != InputEdit) ? InputEdit : OutputEdit;
+                FocusedEdit =
+                    ((FocusedEdit != InputEdit) && (InputEditHeight != 0))
+                    ? InputEdit
+                    : OutputEdit;
                 ::SetFocus(FocusedEdit);
             }
 
@@ -487,6 +531,9 @@ LPCWSTR Mile::PiConsole::GetInput(
 
     auto ExitHandler = Mile::ScopeExitTaskHandler([&]()
     {
+        ConsoleInformation->InputEditHeight = 0;
+        ::PiConsoleRefreshLayout(WindowHandle);
+
         if (ConsoleInformation)
         {
             ::SendMessageW(
@@ -539,6 +586,9 @@ LPCWSTR Mile::PiConsole::GetInput(
     {
         return nullptr;
     }
+
+    ConsoleInformation->InputEditHeight = 24;
+    ::PiConsoleRefreshLayout(WindowHandle);
 
     ::WaitForSingleObjectEx(
         ConsoleInformation->InputSignal,
