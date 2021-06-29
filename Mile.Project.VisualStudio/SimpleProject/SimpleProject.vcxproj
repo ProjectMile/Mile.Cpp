@@ -8,6 +8,7 @@
   </PropertyGroup>
   <Import Project="..\Mile.Project.VisualStudio\Mile.Project.Cpp.props" />
   <Import Project="..\Mile.Project.VisualStudio\Mile.Project.Cpp.VC-LTL.props" />
+  <Import Project="..\..\Mile.Cpp\Mile.Library\Mile.Library.vcxitems" Label="Shared" />
   <ItemGroup>
     <ClCompile Include="SimpleProject.cpp" />
   </ItemGroup>
