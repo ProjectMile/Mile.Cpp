@@ -5,12 +5,12 @@ VisualStudioVersion = 16.0.31229.75
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleProject", "SimpleProject\SimpleProject.vcxproj", "{F3E82C07-D4FD-45AD-9C7C-29C7FC210158}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mile.Library", "..\Mile.Cpp\Mile.Library\Mile.Library.vcxitems", "{CE65A617-D629-4B2A-BE58-9B96011980C1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mile.Library", "Mile.Cpp\Mile.Library\Mile.Library.vcxitems", "{CE65A617-D629-4B2A-BE58-9B96011980C1}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\Mile.Cpp\Mile.Library\Mile.Library.vcxitems*{ce65a617-d629-4b2a-be58-9b96011980c1}*SharedItemsImports = 9
-		..\Mile.Cpp\Mile.Library\Mile.Library.vcxitems*{f3e82c07-d4fd-45ad-9c7c-29c7fc210158}*SharedItemsImports = 4
+		Mile.Cpp\Mile.Library\Mile.Library.vcxitems*{ce65a617-d629-4b2a-be58-9b96011980c1}*SharedItemsImports = 9
+		Mile.Cpp\Mile.Library\Mile.Library.vcxitems*{f3e82c07-d4fd-45ad-9c7c-29c7fc210158}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
