@@ -2141,6 +2141,26 @@ namespace Mile
     /**
      * @brief Write formatted data to a UTF-16 string.
      * @param Format Format-control string.
+     * @param ArgList Pointer to list of optional arguments to be formatted.
+     * @return A formatted string if successful, an empty string otherwise.
+    */
+    std::wstring VFormatUtf16String(
+        _In_z_ _Printf_format_string_ wchar_t const* const Format,
+        _In_z_ _Printf_format_string_ va_list ArgList);
+
+    /**
+     * @brief Write formatted data to a UTF-8 string.
+     * @param Format Format-control string.
+     * @param ArgList Pointer to list of optional arguments to be formatted.
+     * @return A formatted string if successful, an empty string otherwise.
+    */
+    std::string VFormatUtf8String(
+        _In_z_ _Printf_format_string_ char const* const Format,
+        _In_z_ _Printf_format_string_ va_list ArgList);
+
+    /**
+     * @brief Write formatted data to a UTF-16 string.
+     * @param Format Format-control string.
      * @param ... Optional arguments to be formatted.
      * @return A formatted string if successful, an empty string otherwise.
     */

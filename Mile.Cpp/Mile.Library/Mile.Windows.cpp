@@ -1963,16 +1963,13 @@ std::wstring Mile::GetCurrentProcessModulePath()
     return Path;
 }
 
-std::wstring Mile::FormatUtf16String(
+std::wstring Mile::VFormatUtf16String(
     _In_z_ _Printf_format_string_ wchar_t const* const Format,
-    ...)
+    _In_z_ _Printf_format_string_ va_list ArgList)
 {
     // Check the argument list.
-    if (nullptr != Format)
+    if (Format)
     {
-        va_list ArgList = nullptr;
-        va_start(ArgList, Format);
-
         // Get the length of the format result.
         size_t nLength = static_cast<size_t>(_vscwprintf(Format, ArgList)) + 1;
 
@@ -1987,8 +1984,6 @@ std::wstring Mile::FormatUtf16String(
             Format,
             ArgList);
 
-        va_end(ArgList);
-
         if (nWritten > 0)
         {
             // If succeed, resize to fit and return result.
@@ -2001,16 +1996,13 @@ std::wstring Mile::FormatUtf16String(
     return L"";
 }
 
-std::string Mile::FormatUtf8String(
+std::string Mile::VFormatUtf8String(
     _In_z_ _Printf_format_string_ char const* const Format,
-    ...)
+    _In_z_ _Printf_format_string_ va_list ArgList)
 {
     // Check the argument list.
-    if (nullptr != Format)
+    if (Format)
     {
-        va_list ArgList = nullptr;
-        va_start(ArgList, Format);
-
         // Get the length of the format result.
         size_t nLength = static_cast<size_t>(_vscprintf(Format, ArgList)) + 1;
 
@@ -2025,8 +2017,6 @@ std::string Mile::FormatUtf8String(
             Format,
             ArgList);
 
-        va_end(ArgList);
-
         if (nWritten > 0)
         {
             // If succeed, resize to fit and return result.
@@ -2037,6 +2027,28 @@ std::string Mile::FormatUtf8String(
 
     // If failed, return an empty string.
     return "";
+}
+
+std::wstring Mile::FormatUtf16String(
+    _In_z_ _Printf_format_string_ wchar_t const* const Format,
+    ...)
+{
+    va_list ArgList;
+    va_start(ArgList, Format);
+    std::wstring Result = Mile::VFormatUtf16String(Format, ArgList);
+    va_end(ArgList);
+    return Result;
+}
+
+std::string Mile::FormatUtf8String(
+    _In_z_ _Printf_format_string_ char const* const Format,
+    ...)
+{
+    va_list ArgList;
+    va_start(ArgList, Format);
+    std::string Result = Mile::VFormatUtf8String(Format, ArgList);
+    va_end(ArgList);
+    return Result;
 }
 
 std::wstring Mile::ConvertByteSizeToUtf16String(
