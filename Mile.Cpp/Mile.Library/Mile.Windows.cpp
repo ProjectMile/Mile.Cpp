@@ -503,7 +503,8 @@ Mile::HResult Mile::EnumerateFile(
         return E_OUTOFMEMORY;
     }
 
-    OriginalInformation = reinterpret_cast<PFILE_ID_BOTH_DIR_INFO>(Buffer);
+    OriginalInformation =
+        reinterpret_cast<PFILE_ID_BOTH_DIR_INFO>(Buffer);
 
     if (::GetFileInformationByHandleEx(
         FileHandle,
@@ -524,6 +525,8 @@ Mile::HResult Mile::EnumerateFile(
 
             if (!OriginalInformation->NextEntryOffset)
             {
+                OriginalInformation =
+                    reinterpret_cast<PFILE_ID_BOTH_DIR_INFO>(Buffer);
                 break;
             }
 
@@ -551,6 +554,8 @@ Mile::HResult Mile::EnumerateFile(
 
                 if (!OriginalInformation->NextEntryOffset)
                 {
+                    OriginalInformation =
+                        reinterpret_cast<PFILE_ID_BOTH_DIR_INFO>(Buffer);
                     break;
                 }
 
@@ -1573,7 +1578,8 @@ Mile::HResult Mile::RegQueryStringValue(
         &cbData));
     if (SUCCEEDED(hr))
     {
-        *lpData = reinterpret_cast<LPWSTR>(Mile::HeapMemory::Allocate(cbData));
+        *lpData = reinterpret_cast<LPWSTR>(Mile::HeapMemory::Allocate(
+            cbData * sizeof(wchar_t)));
         if (*lpData)
         {
             DWORD Type = 0;
@@ -1584,12 +1590,13 @@ Mile::HResult Mile::RegQueryStringValue(
                 &Type,
                 reinterpret_cast<LPBYTE>(*lpData),
                 &cbData));
-            if (SUCCEEDED(hr) && REG_SZ != Type)
+            if (SUCCEEDED(hr) && REG_SZ != Type && REG_EXPAND_SZ != Type)
                 hr = __HRESULT_FROM_WIN32(ERROR_ILLEGAL_ELEMENT_ADDRESS);
 
             if (FAILED(hr))
-                hr = Mile::HResultFromLastError(
-                    Mile::HeapMemory::Free(*lpData));
+            {
+                Mile::HeapMemory::Free(*lpData);
+            }
         }
         else
         {
