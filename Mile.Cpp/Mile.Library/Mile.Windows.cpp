@@ -329,7 +329,9 @@ Mile::HResultFromLastError Mile::GetWofCompressionAttribute(
     _Out_ PDWORD CompressionAlgorithm)
 {
     if (!CompressionAlgorithm)
+    {
         return E_INVALIDARG;
+    }
 
     WOF_FILE_PROVIDER_EXTERNAL_INFO WofInfo = { 0 };
     DWORD BytesReturned;
@@ -401,7 +403,7 @@ Mile::HResultFromLastError Mile::RemoveWofCompressionAttribute(
 Mile::HResult Mile::GetCompactOsDeploymentState(
     _Out_ PDWORD DeploymentState)
 {
-    if (DeploymentState)
+    if (!DeploymentState)
     {
         return E_INVALIDARG;
     }
