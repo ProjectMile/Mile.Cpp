@@ -4,14 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.31229.75
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleProject", "SimpleProject\SimpleProject.vcxproj", "{F3E82C07-D4FD-45AD-9C7C-29C7FC210158}"
+	ProjectSection(ProjectDependencies) = postProject
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE} = {84E27A16-CBC7-466C-971F-2A4E0F2F95BE}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mile.Library", "Mile.Cpp\Mile.Library\Mile.Library.vcxitems", "{CE65A617-D629-4B2A-BE58-9B96011980C1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mile.Library", "Mile.Cpp\Mile.Library\Mile.Library.vcxproj", "{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Mile.Cpp\Mile.Library\Mile.Library.vcxitems*{ce65a617-d629-4b2a-be58-9b96011980c1}*SharedItemsImports = 9
-		Mile.Cpp\Mile.Library\Mile.Library.vcxitems*{f3e82c07-d4fd-45ad-9c7c-29c7fc210158}*SharedItemsImports = 4
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
 		Debug|x64 = Debug|x64
@@ -33,6 +32,18 @@ Global
 		{F3E82C07-D4FD-45AD-9C7C-29C7FC210158}.Release|x64.Build.0 = Release|x64
 		{F3E82C07-D4FD-45AD-9C7C-29C7FC210158}.Release|x86.ActiveCfg = Release|Win32
 		{F3E82C07-D4FD-45AD-9C7C-29C7FC210158}.Release|x86.Build.0 = Release|Win32
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Debug|ARM64.Build.0 = Debug|ARM64
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Debug|x64.ActiveCfg = Debug|x64
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Debug|x64.Build.0 = Debug|x64
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Debug|x86.ActiveCfg = Debug|Win32
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Debug|x86.Build.0 = Debug|Win32
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Release|ARM64.ActiveCfg = Release|ARM64
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Release|ARM64.Build.0 = Release|ARM64
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Release|x64.ActiveCfg = Release|x64
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Release|x64.Build.0 = Release|x64
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Release|x86.ActiveCfg = Release|Win32
+		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
