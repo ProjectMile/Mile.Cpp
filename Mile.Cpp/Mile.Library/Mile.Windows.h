@@ -1317,10 +1317,9 @@ namespace Mile
      *                                 Indicates that the data for the file
      *                                 should be compressed in 16kb chunks with
      *                                 the XPress algorithm.
-     * @return An HResultFromLastError object An containing the HResult object
-     *         containing the error code.
+     * @return An HResult object containing the error code.
     */
-    HResultFromLastError SetWofCompressionAttribute(
+    HResult SetWofCompressionAttribute(
         _In_ HANDLE FileHandle,
         _In_ DWORD CompressionAlgorithm);
 
@@ -1329,10 +1328,9 @@ namespace Mile
      * @param FileHandle A handle to the file on which the operation is to be
      *                   performed. To retrieve a handle, use the CreateFile or
      *                   a similar API.
-     * @return An HResultFromLastError object An containing the HResult object
-     *         containing the error code.
+     * @return An HResult object containing the error code.
     */
-    HResultFromLastError RemoveWofCompressionAttribute(
+    HResult RemoveWofCompressionAttribute(
         _In_ HANDLE FileHandle);
 
     /**
