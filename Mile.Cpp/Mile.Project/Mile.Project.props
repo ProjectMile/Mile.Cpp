@@ -69,8 +69,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
-    <ConfigurationType Condition="'$(MileProjectType)'=='ConsoleApplication'">Application</ConfigurationType>
-    <ConfigurationType Condition="'$(MileProjectType)'=='WindowsApplication'">Application</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <ConfigurationType Condition="'$(MileProjectType)'=='DynamicLibrary'">DynamicLibrary</ConfigurationType>
     <ConfigurationType Condition="'$(MileProjectType)'=='StaticLibrary'">StaticLibrary</ConfigurationType>
     <PlatformToolset>v142</PlatformToolset>
