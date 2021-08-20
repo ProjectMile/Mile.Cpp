@@ -166,7 +166,7 @@ namespace
             EditControlHandle);
     }
 
-    static LRESULT PiConsoleInputEditCallback(
+    static LRESULT CALLBACK PiConsoleInputEditCallback(
         _In_ HWND hWnd,
         _In_ UINT uMsg,
         _In_ WPARAM wParam,
@@ -211,7 +211,7 @@ namespace
             lParam);
     }
 
-    static LRESULT PiConsoleOutputEditCallback(
+    static LRESULT CALLBACK PiConsoleOutputEditCallback(
         _In_ HWND hWnd,
         _In_ UINT uMsg,
         _In_ WPARAM wParam,
@@ -254,7 +254,7 @@ namespace
             lParam);
     }
 
-    static LRESULT PiConsoleWindowCallback(
+    static LRESULT CALLBACK PiConsoleWindowCallback(
         _In_ HWND hWnd,
         _In_ UINT uMsg,
         _In_ WPARAM wParam,
