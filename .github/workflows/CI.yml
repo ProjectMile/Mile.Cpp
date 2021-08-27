@@ -23,8 +23,8 @@ jobs:
     - name: Build
       run: msbuild -m BuildAllTargets.proj
     - name: Prepare artifacts
-      run: rm Source\Native\Output\Binaries\* -vb -Recurse -Force -Include *.exp, *.idb, *.ilk, *.iobj, *.ipdb, *.lastbuildstate, *.lib, *.obj, *.res, *.tlog
+      run: rm Output\Binaries\* -vb -Recurse -Force -Include *.exp, *.idb, *.ilk, *.iobj, *.ipdb, *.lastbuildstate, *.lib, *.obj, *.res, *.tlog
     - uses: actions/upload-artifact@v2
       with:
         name: Mile.Cpp_CI_Build
-        path: Source\Native\Output\Binaries
+        path: Output\Binaries
