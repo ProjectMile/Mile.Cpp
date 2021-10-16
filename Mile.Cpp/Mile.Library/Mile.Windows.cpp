@@ -701,12 +701,22 @@ Mile::HResultFromLastError Mile::DeleteFileByHandle(
 {
     FILE_DISPOSITION_INFO DispostionInfo;
     DispostionInfo.DeleteFile = TRUE;
-
-    return ::SetFileInformationByHandle(
+    if (::SetFileInformationByHandle(
         FileHandle,
         FILE_INFO_BY_HANDLE_CLASS::FileDispositionInfo,
         &DispostionInfo,
-        sizeof(FILE_DISPOSITION_INFO));
+        sizeof(FILE_DISPOSITION_INFO)))
+    {
+        return TRUE;
+    }
+
+    FILE_DISPOSITION_INFO_EX DispostionInfoEx;
+    DispostionInfoEx.Flags = FILE_DISPOSITION_FLAG_DELETE;
+    return ::SetFileInformationByHandle(
+        FileHandle,
+        FILE_INFO_BY_HANDLE_CLASS::FileDispositionInfoEx,
+        &DispostionInfoEx,
+        sizeof(FILE_DISPOSITION_INFO_EX));
 }
 
 Mile::HResult Mile::DeleteFileByHandleIgnoreReadonlyAttribute(
@@ -731,7 +741,7 @@ Mile::HResult Mile::DeleteFileByHandleIgnoreReadonlyAttribute(
             if (hr.IsFailed())
             {
                 // Restore attributes if failed.
-                hr = Mile::SetFileAttributesByHandle(
+                Mile::SetFileAttributesByHandle(
                     FileHandle,
                     OldAttribute);
             }
