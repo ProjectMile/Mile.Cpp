@@ -696,6 +696,25 @@ Mile::HResultFromLastError Mile::SetFileAttributesByHandle(
         sizeof(FILE_BASIC_INFO));
 }
 
+Mile::HResultFromLastError Mile::GetFileHardlinkCountByHandle(
+    _In_ HANDLE FileHandle,
+    _Out_ PDWORD HardlinkCount)
+{
+    FILE_STANDARD_INFO StandardInfo;
+
+    BOOL Result = ::GetFileInformationByHandleEx(
+        FileHandle,
+        FILE_INFO_BY_HANDLE_CLASS::FileStandardInfo,
+        &StandardInfo,
+        sizeof(FILE_STANDARD_INFO));
+
+    *HardlinkCount = Result
+        ? StandardInfo.NumberOfLinks
+        : static_cast<DWORD>(-1);
+
+    return Result;
+}
+
 Mile::HResultFromLastError Mile::DeleteFileByHandle(
     _In_ HANDLE FileHandle)
 {
