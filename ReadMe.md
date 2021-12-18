@@ -14,11 +14,6 @@ Mile.Project is a configuration template for defining Visual Studio (MSBuild)
 C++ projects. It can help us to simplify the definition of Visual Studio 
 (MSBuild) C++ projects.
 
-### [Mile.SocketBroker](Mile.SocketBroker)
-
-Mile.SocketBroker is a socket broker for loopback communicating with Universal 
-Windows Platform (UWP) App and socket server via App Service.
-
 ## Example
 
 The project in [SimpleProject](SimpleProject) folder is a template Windows 
