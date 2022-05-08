@@ -40,6 +40,7 @@
     <ConfigurationType Condition="'$(MileProjectType)'=='DynamicLibrary'">DynamicLibrary</ConfigurationType>
     <ConfigurationType Condition="'$(MileProjectType)'=='StaticLibrary'">StaticLibrary</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <CharacterSet>Unicode</CharacterSet>
     <UseDebugLibraries Condition="'$(Configuration)'=='Debug'">true</UseDebugLibraries>
     <UseDebugLibraries Condition="'$(Configuration)'=='Release'">false</UseDebugLibraries>
