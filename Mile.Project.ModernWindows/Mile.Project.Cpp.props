@@ -27,12 +27,19 @@
   How to enable the version information support.
     Copy Mile.Project.Properties.Template.h to the project folder and rename it
     to Mile.Project.Properties.h.
+  
+  How to enable VC-LTL support.
+    <MileProjectEnableVCLTLSupport>true</MileProjectEnableVCLTLSupport>
+
+  How to enable C++/WinRT support.
+    <MileProjectEnableCppWinRTSupport>true</MileProjectEnableCppWinRTSupport>
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <MinimumVisualStudioVersion>17.0</MinimumVisualStudioVersion>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <CleanImport Condition="'$(MileProjectEnableVCLTLSupport)' == 'true' and '$([System.Version]::Parse('$(WindowsTargetPlatformMinVersion)').Build) >= '10240'">true</CleanImport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -73,6 +80,8 @@
       <PreprocessorDefinitions Condition="'$(MileProjectType)'=='DynamicLibrary'">_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(MileProjectType)'=='StaticLibrary'">_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary Condition="'$(MileProjectEnableVCLTLSupport)' == 'true' and '$(Configuration)'=='Debug'">MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(MileProjectEnableVCLTLSupport)' == 'true' and '$(Configuration)'=='Release'">MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -90,4 +99,12 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(MSBuildThisFileDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <PackageReference Include="VC-LTL" Condition="'$(MileProjectEnableVCLTLSupport)' == 'true'">
+      <Version>5.0.4</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.CppWinRT" Condition="'$(MileProjectEnableCppWinRTSupport)' == 'true'">
+      <Version>2.0.211028.7</Version>
+    </PackageReference>
+  </ItemGroup>
 </Project>
