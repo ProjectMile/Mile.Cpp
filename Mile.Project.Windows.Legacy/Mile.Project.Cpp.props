@@ -30,9 +30,6 @@
   
   How to enable VC-LTL support.
     <MileProjectEnableVCLTLSupport>true</MileProjectEnableVCLTLSupport>
-
-  How to enable C++/WinRT support.
-    <MileProjectEnableCppWinRTSupport>true</MileProjectEnableCppWinRTSupport>
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
@@ -40,35 +37,6 @@
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <CleanImport>true</CleanImport>
-  </PropertyGroup>
-  <PropertyGroup Label="Globals" Condition="'$(MileProjectEnableCppWinRTSupport)' == 'true'">
-    <CppWinRTOptimized>true</CppWinRTOptimized>
-    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
-    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
-    <!--
-      Import all Windows Runtime metadata in Windows SDK. By default enable 
-      C++/WinRT to include target platform winmds if we didn't override sdk
-      references and the C++ Project system isn't already adding them.
-    -->
-    <CppWinRTImplicitlyExpandTargetPlatform>true</CppWinRTImplicitlyExpandTargetPlatform>
-    <!--
-      Need to set to 'true' so that Win32 APIs are available; setting
-      $(WindowsAppContainer) to 'true' causes the C++ project system to set
-      WINAPI_FAMILY=WINAPI_FAMILY_APP unless this property property is also
-      'true'.
-    -->
-    <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
-    <!-- Disable Microsoft.VCLibs reference -->
-    <UseCrtSDKReference>false</UseCrtSDKReference>
-    <!--
-      This is magic that tells msbuild to link against the Desktop platform
-      instead of the App platform. This you definitely want, because we're not
-      building a true universal "app", we're building a desktop application
-      with xaml. Without this, we'll link against the app CRT, and the =
-      unpackaged story _will not_ work. Furthermore, APIs like
-      CreatePseudoConsole won't be linkable without this. 
-    -->
-    <_VC_Target_Library_Platform>Desktop</_VC_Target_Library_Platform>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -118,22 +86,6 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(MSBuildThisFileDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(MileProjectEnableCppWinRTSupport)' == 'true'">
-    <ClCompile>
-      <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
-      <PreprocessorDefinitions Condition="'$(MileProjectType)'=='DynamicLibrary'">_WINRT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <Link>
-      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
-      <!--
-        Because we have WindowsAppContainer set to 'true' (required for
-        'Project -> Publish' menu and the .appxmanifest designer), we do not
-        get these libs included automatically, so we explictly include them 
-        here.
-      -->
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -157,9 +109,6 @@
   <ItemGroup>
     <PackageReference Include="VC-LTL" Condition="'$(MileProjectEnableVCLTLSupport)' == 'true'">
       <Version>5.0.5</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Windows.CppWinRT" Condition="'$(MileProjectEnableCppWinRTSupport)' == 'true'">
-      <Version>2.0.220418.1</Version>
     </PackageReference>
   </ItemGroup>
 </Project>
