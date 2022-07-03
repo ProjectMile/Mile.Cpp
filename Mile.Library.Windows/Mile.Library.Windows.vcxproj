@@ -13,5 +13,11 @@
   <ItemGroup>
     <None Include="Mile.Library.Windows.props" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Mile.Windows.DpiHelpers.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Mile.Windows.DpiHelpers.h" />
+  </ItemGroup>
   <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
 </Project>
