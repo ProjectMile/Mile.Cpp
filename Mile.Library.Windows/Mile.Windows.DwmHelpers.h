@@ -41,4 +41,15 @@ HRESULT MileSetCaptionColorAttribute(
     _In_ HWND WindowHandle,
     _In_ COLORREF Value);
 
+/**
+ * @brief Retrieves or specifies the system-drawn backdrop material of a
+ *        window, including behind the non-client area.
+ * @param WindowHandle The handle to the window for which the attribute value
+ *                     is to be set.
+ * @return If the function succeeds, it returns S_OK. Otherwise, it returns an
+ *         HRESULT error code.
+*/
+HRESULT MileDisableSystemBackdrop(
+    _In_ HWND WindowHandle);
+
 #endif // !MILE_WINDOWS_DWMHELPERS

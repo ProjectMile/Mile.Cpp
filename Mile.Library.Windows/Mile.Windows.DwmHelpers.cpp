@@ -69,3 +69,16 @@ HRESULT MileSetCaptionColorAttribute(
         &Value,
         sizeof(COLORREF));
 }
+
+HRESULT MileDisableSystemBackdrop(
+    _In_ HWND WindowHandle)
+{
+    const DWORD DwmWindowSystemBackdropTypeAttribute = 38;
+    const DWORD DwmWindowSystemBackdropTypeNone = 1;
+    DWORD Value = DwmWindowSystemBackdropTypeNone;
+    return ::DwmSetWindowAttribute(
+        WindowHandle,
+        DwmWindowSystemBackdropTypeAttribute,
+        &Value,
+        sizeof(DWORD));
+}
