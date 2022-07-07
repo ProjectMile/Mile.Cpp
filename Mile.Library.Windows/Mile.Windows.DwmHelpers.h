@@ -29,4 +29,16 @@ HRESULT MileSetUseImmersiveDarkModeAttribute(
     _In_ HWND WindowHandle,
     _In_ BOOL Value);
 
+/**
+ * @brief Specifies the color of the caption.
+ * @param WindowHandle The handle to the window for which the attribute value
+ *                     is to be set.
+ * @param Value The color of the caption.
+ * @return If the function succeeds, it returns S_OK. Otherwise, it returns an
+ *         HRESULT error code.
+*/
+HRESULT MileSetCaptionColorAttribute(
+    _In_ HWND WindowHandle,
+    _In_ COLORREF Value);
+
 #endif // !MILE_WINDOWS_DWMHELPERS

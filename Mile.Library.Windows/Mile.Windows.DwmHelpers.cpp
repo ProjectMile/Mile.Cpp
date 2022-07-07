@@ -57,3 +57,15 @@ HRESULT MileSetUseImmersiveDarkModeAttribute(
         &Value,
         sizeof(BOOL));
 }
+
+HRESULT MileSetCaptionColorAttribute(
+    _In_ HWND WindowHandle,
+    _In_ COLORREF Value)
+{
+    const DWORD DwmWindowCaptionColorAttribute = 35;
+    return ::DwmSetWindowAttribute(
+        WindowHandle,
+        DwmWindowCaptionColorAttribute,
+        &Value,
+        sizeof(COLORREF));
+}
