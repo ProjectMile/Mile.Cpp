@@ -52,4 +52,11 @@ HRESULT MileSetCaptionColorAttribute(
 HRESULT MileDisableSystemBackdrop(
     _In_ HWND WindowHandle);
 
+/**
+ * @brief Tests if the dark mode system setting is enabled on the computer.
+ * @return True if the dark mode system setting is enabled. Otherwise, this
+ *         function returns false.
+*/
+bool MileShouldAppsUseImmersiveDarkMode();
+
 #endif // !MILE_WINDOWS_DWMHELPERS
