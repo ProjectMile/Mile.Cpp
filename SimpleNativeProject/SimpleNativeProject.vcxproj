@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.x86.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.x64.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.ARM64.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{149BAD1E-2B94-4A4A-BDF7-E848138F835E}</ProjectGuid>
+    <RootNamespace>SimpleNativeProject</RootNamespace>
+    <MileProjectType>WindowsApplication</MileProjectType>
+  </PropertyGroup>
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.props" />
+  <Import Project="..\libkcrt\libkcrt.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>NSudoDevilMode_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ControlFlowGuard>false</ControlFlowGuard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Native</SubSystem>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>ntdll.lib;libkcrt.lib</AdditionalDependencies>
+      <CETCompat>false</CETCompat>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="SimpleNativeProject.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Mile.Project.Properties.h" />
+    <ClInclude Include="MINT.h" />
+  </ItemGroup>
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
+</Project>
