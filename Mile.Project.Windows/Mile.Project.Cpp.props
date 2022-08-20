@@ -158,6 +158,7 @@
     <ClCompile>
       <ControlFlowGuard Condition="'$(Configuration)'=='Release'">Guard</ControlFlowGuard>
       <GuardEHContMetadata Condition="'$(Platform)'=='ARM64' Or '$(Platform)'=='x64'">true</GuardEHContMetadata>
+      <GuardSignedReturns Condition="'$(Platform)'=='ARM64'">true</GuardSignedReturns>
     </ClCompile>
     <Link>
       <CETCompat Condition="'$(Platform)'=='Win32' Or '$(Platform)'=='x64'">true</CETCompat>
