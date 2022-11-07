@@ -1539,18 +1539,6 @@ namespace Mile
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
     /**
-     * @brief Enables the Per-Monitor DPI Aware for the specified dialog.
-     * @return If the function fails, the return value is -1.
-     * @remarks You need to use this function in Windows 10 Threshold 1 or
-     *          Windows 10 Threshold 2.
-    */
-    INT EnablePerMonitorDialogScaling();
-
-#endif
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-    /**
      * @brief Enables WM_DPICHANGED message for child window for the associated
      *        window.
      * @param WindowHandle The window you want to enable WM_DPICHANGED message
