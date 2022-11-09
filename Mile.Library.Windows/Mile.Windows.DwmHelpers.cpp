@@ -10,22 +10,6 @@
 
 #include "Mile.Windows.DwmHelpers.h"
 
-#include <dwmapi.h>
-#pragma comment(lib, "dwmapi.lib")
-
-EXTERN_C HRESULT WINAPI MileDisableSystemBackdrop(
-    _In_ HWND WindowHandle)
-{
-    const DWORD DwmWindowSystemBackdropTypeAttribute = 38;
-    const DWORD DwmWindowSystemBackdropTypeNone = 1;
-    DWORD Value = DwmWindowSystemBackdropTypeNone;
-    return ::DwmSetWindowAttribute(
-        WindowHandle,
-        DwmWindowSystemBackdropTypeAttribute,
-        &Value,
-        sizeof(DWORD));
-}
-
 EXTERN_C BOOL WINAPI MileShouldAppsUseImmersiveDarkMode()
 {
     DWORD Type = REG_DWORD;
