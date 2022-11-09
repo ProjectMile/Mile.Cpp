@@ -13,18 +13,6 @@
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 
-EXTERN_C HRESULT WINAPI MileSetCaptionColorAttribute(
-    _In_ HWND WindowHandle,
-    _In_ COLORREF Value)
-{
-    const DWORD DwmWindowCaptionColorAttribute = 35;
-    return ::DwmSetWindowAttribute(
-        WindowHandle,
-        DwmWindowCaptionColorAttribute,
-        &Value,
-        sizeof(COLORREF));
-}
-
 EXTERN_C HRESULT WINAPI MileDisableSystemBackdrop(
     _In_ HWND WindowHandle)
 {

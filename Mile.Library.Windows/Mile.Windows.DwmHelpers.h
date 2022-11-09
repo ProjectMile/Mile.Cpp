@@ -16,18 +16,6 @@
 #include <Windows.h>
 
 /**
- * @brief Specifies the color of the caption.
- * @param WindowHandle The handle to the window for which the attribute value
- *                     is to be set.
- * @param Value The color of the caption.
- * @return If the function succeeds, it returns S_OK. Otherwise, it returns an
- *         HRESULT error code.
-*/
-EXTERN_C HRESULT WINAPI MileSetCaptionColorAttribute(
-    _In_ HWND WindowHandle,
-    _In_ COLORREF Value);
-
-/**
  * @brief Retrieves or specifies the system-drawn backdrop material of a
  *        window, including behind the non-client area.
  * @param WindowHandle The handle to the window for which the attribute value
