@@ -23,5 +23,10 @@
     <ClInclude Include="Mile.Portable.h" />
     <ClInclude Include="Mile.Windows.h" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Mile.Windows.Helpers">
+      <Version>1.0.8</Version>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="..\Mile.Project\Mile.Project.targets" />
 </Project>

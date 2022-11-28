@@ -14,6 +14,8 @@
 
 #include <cstdint>
 
+#include <Mile.Helpers.h>
+
 namespace
 {
     struct PiConsoleInformation
@@ -619,7 +621,7 @@ HWND Mile::PiConsole::Create(
             xDPI,
             USER_DEFAULT_SCREEN_DPI);
 
-        Mile::EnablePerMonitorDialogScaling();
+        ::MileEnablePerMonitorDialogScaling();
 
         WNDCLASSEXW WindowClass;
         WindowClass.cbSize = sizeof(WNDCLASSEX);
