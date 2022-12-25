@@ -13,7 +13,7 @@
 
 #include "Mile.Portable.h"
 
-#include <Windows.h>
+#include <Mile.Helpers.h>
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #include <ShellScalingApi.h>
@@ -207,69 +207,6 @@ namespace Mile
         operator HRESULT()
         {
             return this->operator Mile::HResult();
-        }
-    };
-
-    /**
-     * @brief Wraps the Windows heap memory manager.
-    */
-    class HeapMemory
-    {
-    public:
-
-        /**
-         * @brief Allocates a block of memory from the default heap of the
-         *        calling process. The allocated memory will be initialized to
-         *        zero. The allocated memory is not movable.
-         * @param Size The number of bytes to be allocated.
-         * @return If the function succeeds, the return value is a pointer to
-         *         the allocated memory block. If the function fails, the
-         *         return value is nullptr.
-        */
-        static LPVOID Allocate(
-            _In_ SIZE_T Size) noexcept
-        {
-            return ::HeapAlloc(::GetProcessHeap(), HEAP_ZERO_MEMORY, Size);
-        }
-
-        /**
-         * @brief Reallocates a block of memory from the default heap of the
-         *        calling process. If the reallocation request is for a larger
-         *        size, the additional region of memory beyond the original
-         *        size be initialized to zero. This function enables you to
-         *        resize a memory block and change other memory block
-         *        properties. The allocated memory is not movable.
-         * @param Block A pointer to the block of memory that the function
-         *              reallocates. This pointer is returned by an earlier
-         *              call to Allocate and Reallocate method.
-         * @param Size The new size of the memory block, in bytes. A memory
-         *             block's size can be increased or decreased by using this
-         *             function.
-         * @return If the function succeeds, the return value is a pointer to
-         *         the reallocated memory block. If the function fails, the
-         *         return value is nullptr.
-        */
-        static LPVOID Reallocate(
-            _In_ PVOID Block,
-            _In_ SIZE_T Size) noexcept
-        {
-            return ::HeapReAlloc(::GetProcessHeap(), HEAP_ZERO_MEMORY, Block, Size);
-        }
-
-        /**
-         * @brief Frees a memory block allocated from a heap by the Allocate or
-         *        Reallocate method.
-         * @param Block A pointer to the memory block to be freed. This pointer
-         *              is returned by the Allocate or Reallocate method. If
-         *              this pointer is nullptr, the behavior is undefined.
-         * @return If the function succeeds, the return value is nonzero. If
-         *         the function fails, the return value is zero. An application
-         *         can call GetLastError for extended error information.
-        */
-        static BOOL Free(
-            _In_ LPVOID Block) noexcept
-        {
-            return ::HeapFree(::GetProcessHeap(), 0, Block);
         }
     };
 
@@ -1736,7 +1673,7 @@ namespace Mile
      * @param OutputInformation A pointer to a buffer the function fills with
      *                          the requested information. When you have
      *                          finished using the information, free it by
-     *                          calling the Mile::HeapMemory::Free method. You
+     *                          calling the MileFreeMemory method. You
      *                          should also set the pointer to nullptr.
      * @return An HResultFromLastError object An containing the HResult object
      *         containing the error code.
@@ -1796,7 +1733,7 @@ namespace Mile
      * @param lpValueName The name of the registry value.
      * @param lpData A pointer to a buffer that receives the value's data. When
      *               you have finished using the information, free it by
-     *               calling the Mile::HeapMemory::Free method. You should also
+     *               calling the MileFreeMemory method. You should also
      *               set the pointer to nullptr.
      * @return An HResult object containing the error code.
     */
@@ -2142,7 +2079,7 @@ namespace Mile
      *                   be opened with the appropriate permissions for the
      *                   requested change. This handle should not be a pipe
      *                   handle.
-     * @param CallbackFunction The file enumerate callback function. 
+     * @param CallbackFunction The file enumerate callback function.
      * @return An HResult object containing the error code.
     */
     template<class CallbackType>

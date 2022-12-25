@@ -63,7 +63,7 @@ namespace Mile
          * @param InputPrompt The prompt you want to notice to the user.
          * @return The next line of characters from the user input. If the
          *         return value is not nullptr, you should use
-         *         Mile::HeapMemory::Free to release.
+         *         MileFreeMemory to release.
         */
         static LPWSTR GetInput(
             _In_ HWND WindowHandle,

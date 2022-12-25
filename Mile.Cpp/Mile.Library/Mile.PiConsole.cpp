@@ -275,7 +275,7 @@ namespace
 
             PiConsoleInformation* ConsoleInformation =
                 reinterpret_cast<PiConsoleInformation*>(
-                    Mile::HeapMemory::Allocate(sizeof(PiConsoleInformation)));
+                    ::MileAllocateMemory(sizeof(PiConsoleInformation)));
             if (!ConsoleInformation)
             {
                 return -1;
@@ -534,7 +534,7 @@ namespace
                     ::DestroyWindow(ConsoleInformation->OutputEdit);
                 }
 
-                Mile::HeapMemory::Free(ConsoleInformation);
+                ::MileFreeMemory(ConsoleInformation);
             }
 
             ::PostQuitMessage(0);
@@ -735,7 +735,7 @@ LPWSTR Mile::PiConsole::GetInput(
         {
             if (InputBuffer)
             {
-                Mile::HeapMemory::Free(InputBuffer);
+                ::MileFreeMemory(InputBuffer);
                 InputBuffer = nullptr;
             }
         }
@@ -780,7 +780,7 @@ LPWSTR Mile::PiConsole::GetInput(
     if (TextLength)
     {
         InputBuffer = reinterpret_cast<wchar_t*>(
-            Mile::HeapMemory::Allocate((TextLength + 1) * sizeof(wchar_t)));
+            ::MileAllocateMemory((TextLength + 1) * sizeof(wchar_t)));
         if (InputBuffer)
         {
             Result = ::GetWindowTextW(

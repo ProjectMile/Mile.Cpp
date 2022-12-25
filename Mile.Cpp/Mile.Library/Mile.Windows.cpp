@@ -512,11 +512,11 @@ Mile::HResult Mile::EnumerateFile(
     {
         if (Buffer)
         {
-            Mile::HeapMemory::Free(Buffer);
+            ::MileFreeMemory(Buffer);
         }
     });
 
-    Buffer = reinterpret_cast<PBYTE>(Mile::HeapMemory::Allocate(BufferSize));
+    Buffer = reinterpret_cast<PBYTE>(::MileAllocateMemory(BufferSize));
     if (!Buffer)
     {
         return E_OUTOFMEMORY;
@@ -1289,7 +1289,7 @@ Mile::HResultFromLastError Mile::GetTokenInformationWithMemory(
         &Length);
     if (ERROR_INSUFFICIENT_BUFFER == ::GetLastError())
     {
-        *OutputInformation = Mile::HeapMemory::Allocate(Length);
+        *OutputInformation = ::MileAllocateMemory(Length);
         if (*OutputInformation)
         {
             Result = ::GetTokenInformation(
@@ -1300,7 +1300,7 @@ Mile::HResultFromLastError Mile::GetTokenInformationWithMemory(
                 &Length);
             if (!Result)
             {
-                Mile::HeapMemory::Free(*OutputInformation);
+                ::MileFreeMemory(*OutputInformation);
                 *OutputInformation = nullptr;
             }
         }
@@ -1388,7 +1388,7 @@ Mile::HResult Mile::CreateLUAToken(
         Length += sizeof(ACCESS_ALLOWED_ACE);
 
         NewDefaultDacl = reinterpret_cast<PACL>(
-            Mile::HeapMemory::Allocate(Length));
+            ::MileAllocateMemory(Length));
         if (NewDefaultDacl)
         {
             hr = Mile::HResult::FromWin32(ERROR_NOT_ENOUGH_MEMORY);
@@ -1457,17 +1457,17 @@ Mile::HResult Mile::CreateLUAToken(
 
     if (NewDefaultDacl)
     {
-        Mile::HeapMemory::Free(NewDefaultDacl);
+        ::MileFreeMemory(NewDefaultDacl);
     }
 
     if (pTokenDacl)
     {
-        Mile::HeapMemory::Free(pTokenDacl);
+        ::MileFreeMemory(pTokenDacl);
     }
 
     if (pTokenUser)
     {
-        Mile::HeapMemory::Free(pTokenUser);
+        ::MileFreeMemory(pTokenUser);
     }
 
     if (hr != S_OK)
@@ -1531,7 +1531,7 @@ Mile::HResult Mile::RegQueryStringValue(
         &cbData));
     if (SUCCEEDED(hr))
     {
-        *lpData = reinterpret_cast<LPWSTR>(Mile::HeapMemory::Allocate(
+        *lpData = reinterpret_cast<LPWSTR>(::MileAllocateMemory(
             cbData * sizeof(wchar_t)));
         if (*lpData)
         {
@@ -1548,7 +1548,7 @@ Mile::HResult Mile::RegQueryStringValue(
 
             if (FAILED(hr))
             {
-                Mile::HeapMemory::Free(*lpData);
+                ::MileFreeMemory(*lpData);
             }
         }
         else
@@ -1596,7 +1596,7 @@ Mile::HResult Mile::CoCheckInterfaceName(
                 hr = E_NOINTERFACE;
             }
 
-            Mile::HeapMemory::Free(InterfaceTypeName);
+            ::MileFreeMemory(InterfaceTypeName);
         }
 
         ::RegCloseKey(hKey);
@@ -1665,7 +1665,7 @@ Mile::HResult Mile::AdjustTokenPrivilegesSimple(
         DWORD TPSize = PSize + sizeof(DWORD);
 
         PTOKEN_PRIVILEGES pTP = reinterpret_cast<PTOKEN_PRIVILEGES>(
-            Mile::HeapMemory::Allocate(TPSize));
+            ::MileAllocateMemory(TPSize));
         if (pTP)
         {
             pTP->PrivilegeCount = PrivilegeCount;
@@ -1675,7 +1675,7 @@ Mile::HResult Mile::AdjustTokenPrivilegesSimple(
                 TokenHandle, FALSE, pTP, TPSize, nullptr, nullptr);
             hr = Mile::HResultFromLastError();
 
-            Mile::HeapMemory::Free(pTP);
+            ::MileFreeMemory(pTP);
         }
         else
         {
@@ -1708,7 +1708,7 @@ Mile::HResult Mile::AdjustTokenAllPrivileges(
             pTokenPrivileges->Privileges,
             pTokenPrivileges->PrivilegeCount);
 
-        Mile::HeapMemory::Free(pTokenPrivileges);
+        ::MileFreeMemory(pTokenPrivileges);
     }
 
     return hr;
