@@ -21,9 +21,6 @@
 #pragma comment(lib, "WtsApi32.lib")
 #endif
 
-#include <assert.h>
-#include <process.h>
-
 #pragma region Implementations for Windows (Win32 Style)
 
 namespace
@@ -1046,30 +1043,6 @@ Mile::HResult Mile::StartServiceW(
 }
 
 #endif
-
-HANDLE Mile::CreateThread(
-    _In_opt_ LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    _In_ SIZE_T dwStackSize,
-    _In_ LPTHREAD_START_ROUTINE lpStartAddress,
-    _In_opt_ LPVOID lpParameter,
-    _In_ DWORD dwCreationFlags,
-    _Out_opt_ LPDWORD lpThreadId)
-{
-    // sanity check for lpThreadId
-    assert(sizeof(DWORD) == sizeof(unsigned));
-
-    typedef unsigned(__stdcall* routine_type)(void*);
-
-    // _beginthreadex calls CreateThread which will set the last error
-    // value before it returns.
-    return reinterpret_cast<HANDLE>(::_beginthreadex(
-        lpThreadAttributes,
-        static_cast<unsigned>(dwStackSize),
-        reinterpret_cast<routine_type>(lpStartAddress),
-        lpParameter,
-        dwCreationFlags,
-        reinterpret_cast<unsigned*>(lpThreadId)));
-}
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
