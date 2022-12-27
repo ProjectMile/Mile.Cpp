@@ -1566,12 +1566,6 @@ namespace Mile
         _In_ DWORD dwCreationFlags,
         _Out_opt_ LPDWORD lpThreadId);
 
-    /**
-     * @brief Retrieves the number of logical processors in the current group.
-     * @return The number of logical processors in the current group.
-    */
-    DWORD GetNumberOfHardwareThreads();
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
     /**

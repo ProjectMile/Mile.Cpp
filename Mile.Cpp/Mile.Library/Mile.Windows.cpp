@@ -1071,13 +1071,6 @@ HANDLE Mile::CreateThread(
         reinterpret_cast<unsigned*>(lpThreadId)));
 }
 
-DWORD Mile::GetNumberOfHardwareThreads()
-{
-    SYSTEM_INFO SystemInfo = { 0 };
-    ::GetNativeSystemInfo(&SystemInfo);
-    return SystemInfo.dwNumberOfProcessors;
-}
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 Mile::HResultFromLastError Mile::CreateSessionToken(
