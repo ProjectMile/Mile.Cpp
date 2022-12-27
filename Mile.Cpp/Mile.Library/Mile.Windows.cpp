@@ -933,21 +933,6 @@ Mile::HResult Mile::GetDpiForMonitor(
 
 #endif
 
-ULONGLONG Mile::GetTickCount()
-{
-    LARGE_INTEGER Frequency, PerformanceCount;
-
-    if (::QueryPerformanceFrequency(&Frequency))
-    {
-        if (::QueryPerformanceCounter(&PerformanceCount))
-        {
-            return (PerformanceCount.QuadPart * 1000 / Frequency.QuadPart);
-        }
-    }
-
-    return ::GetTickCount64();
-}
-
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
 Mile::HResult Mile::StartServiceW(
@@ -1006,7 +991,7 @@ Mile::HResult Mile::StartServiceW(
                         SERVICE_START_PENDING
                         == ServiceStatus->dwCurrentState)
                     {
-                        ULONGLONG nCurrentTick = Mile::GetTickCount();
+                        ULONGLONG nCurrentTick = ::MileGetTickCount();
 
                         if (!nLastTick)
                         {
