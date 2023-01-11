@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\Mile.Cpp\Mile.Project\Mile.Project.Platform.Win32.props" />
-  <Import Project="..\Mile.Cpp\Mile.Project\Mile.Project.Platform.x64.props" />
-  <Import Project="..\Mile.Cpp\Mile.Project\Mile.Project.Platform.ARM64.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.x86.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.x64.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Platform.ARM64.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F3E82C07-D4FD-45AD-9C7C-29C7FC210158}</ProjectGuid>
     <RootNamespace>SimpleProject</RootNamespace>
     <MileProjectType>WindowsApplication</MileProjectType>
     <MileProjectManifestFile>SimpleProject.manifest</MileProjectManifestFile>
+    <MileProjectEnableVCLTLSupport>true</MileProjectEnableVCLTLSupport>
   </PropertyGroup>
-  <Import Project="..\Mile.Cpp\Mile.Project\Mile.Project.props" />
-  <Import Project="..\Mile.Cpp\Mile.Project\Mile.Project.Runtime.VC-LTL.props" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.props" />
   <Import Project="..\Mile.Cpp\Mile.Library\Mile.Library.props" />
   <ItemGroup>
     <ClCompile Include="SimpleProject.cpp" />
@@ -26,5 +26,5 @@
       <Version>1.0.11</Version>
     </PackageReference>
   </ItemGroup>
-  <Import Project="..\Mile.Cpp\Mile.Project\Mile.Project.targets" />
+  <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
 </Project>
