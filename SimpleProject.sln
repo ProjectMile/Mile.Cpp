@@ -8,7 +8,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleProject", "SimpleProj
 		{84E27A16-CBC7-466C-971F-2A4E0F2F95BE} = {84E27A16-CBC7-466C-971F-2A4E0F2F95BE}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mile.Library", "Mile.Cpp\Mile.Library\Mile.Library.vcxproj", "{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mile.Library", "Mile.Library\Mile.Library.vcxproj", "{84E27A16-CBC7-466C-971F-2A4E0F2F95BE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mile.Library.Windows", "Mile.Library.Windows\Mile.Library.Windows.vcxproj", "{2D142417-078E-4F56-8D8F-B26085AB5204}"
 EndProject
