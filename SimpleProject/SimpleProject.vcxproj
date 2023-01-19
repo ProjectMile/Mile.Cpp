@@ -9,6 +9,15 @@
     <MileProjectType>WindowsApplication</MileProjectType>
     <MileProjectManifestFile>SimpleProject.manifest</MileProjectManifestFile>
     <MileProjectEnableVCLTLSupport>true</MileProjectEnableVCLTLSupport>
+    <MileProjectUseProjectProperties>true</MileProjectUseProjectProperties>
+    <MileProjectCompanyName>The Simple Project company</MileProjectCompanyName>
+    <MileProjectFileDescription>Simple Project</MileProjectFileDescription>
+    <MileProjectInternalName>SimpleProject</MileProjectInternalName>
+    <MileProjectLegalCopyright>© The Simple Project company. All rights reserved.</MileProjectLegalCopyright>
+    <MileProjectOriginalFilename>SimpleProject.exe</MileProjectOriginalFilename>
+    <MileProjectProductName>SimpleProject</MileProjectProductName>
+    <MileProjectVersion>1.0.0.0</MileProjectVersion>
+    <MileProjectVersionTag Condition="false">Alpha 1</MileProjectVersionTag>
   </PropertyGroup>
   <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.props" />
   <Import Project="..\Mile.Library\Mile.Library.props" />
@@ -17,9 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="SimpleProject.manifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Mile.Project.Properties.h" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Mile.Windows.Helpers">

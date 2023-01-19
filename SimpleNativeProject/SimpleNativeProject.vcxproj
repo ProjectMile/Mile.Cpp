@@ -7,6 +7,15 @@
     <ProjectGuid>{149BAD1E-2B94-4A4A-BDF7-E848138F835E}</ProjectGuid>
     <RootNamespace>SimpleNativeProject</RootNamespace>
     <MileProjectType>WindowsApplication</MileProjectType>
+    <MileProjectUseProjectProperties>true</MileProjectUseProjectProperties>
+    <MileProjectCompanyName>The Simple Project company</MileProjectCompanyName>
+    <MileProjectFileDescription>Simple Native Project</MileProjectFileDescription>
+    <MileProjectInternalName>SimpleNativeProject</MileProjectInternalName>
+    <MileProjectLegalCopyright>© The Simple Project company. All rights reserved.</MileProjectLegalCopyright>
+    <MileProjectOriginalFilename>SimpleNativeProject.exe</MileProjectOriginalFilename>
+    <MileProjectProductName>SimpleNativeProject</MileProjectProductName>
+    <MileProjectVersion>1.0.0.0</MileProjectVersion>
+    <MileProjectVersionTag Condition="false">Alpha 1</MileProjectVersionTag>
   </PropertyGroup>
   <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.props" />
   <Import Project="..\libkcrt\libkcrt.props" />
@@ -27,7 +36,6 @@
     <ClCompile Include="SimpleNativeProject.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Mile.Project.Properties.h" />
     <ClInclude Include="MINT.h" />
   </ItemGroup>
   <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />

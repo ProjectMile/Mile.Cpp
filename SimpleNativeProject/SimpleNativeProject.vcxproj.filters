@@ -4,7 +4,6 @@
     <ClCompile Include="SimpleNativeProject.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Mile.Project.Properties.h" />
     <ClInclude Include="MINT.h" />
   </ItemGroup>
 </Project>
