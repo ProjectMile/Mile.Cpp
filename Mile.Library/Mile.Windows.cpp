@@ -85,148 +85,6 @@ namespace
             OriginalInformation->FileName,
             OriginalInformation->FileNameLength);
     }
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-    const NTSTATUS NtStatusNotImplemented = static_cast<NTSTATUS>(0xC0000002L);
-
-    static bool IsNtStatusSuccess(NTSTATUS Status)
-    {
-        return (Status >= 0);
-    }
-
-    typedef struct _NtUnicodeString
-    {
-        USHORT Length;
-        USHORT MaximumLength;
-        _Field_size_bytes_part_(MaximumLength, Length) PWCH Buffer;
-    } NtUnicodeString, * NtUnicodeStringPointer;
-
-    static bool volatile g_IsTrustedLibraryLoaderInitialized = false;
-    static bool volatile g_IsSecureLibraryLoaderAvailable = false;
-    static FARPROC volatile g_LdrLoadDll = nullptr;
-    static FARPROC volatile g_RtlNtStatusToDosError = nullptr;
-    static FARPROC volatile g_RtlWow64EnableFsRedirectionEx = nullptr;
-    static FARPROC volatile g_RtlInitUnicodeString = nullptr;
-
-    static void InitializeTrustedLibraryLoader()
-    {
-        if (!g_IsTrustedLibraryLoaderInitialized)
-        {
-            // We should check the secure library loader by get the address of
-            // some APIs existed when the secure library loader is available.
-            // Because some environment will return the ERROR_ACCESS_DENIED
-            // instead of ERROR_INVALID_PARAMETER from GetLastError after
-            // calling the LoadLibraryEx with using the unsupported flags.
-            {
-                HMODULE hModule = ::GetModuleHandleW(L"kernel32.dll");
-                if (hModule)
-                {
-                    g_IsSecureLibraryLoaderAvailable = ::GetProcAddress(
-                        hModule, "AddDllDirectory");
-                }
-            }
-
-            {
-                HMODULE hModule = ::GetModuleHandleW(L"ntdll.dll");
-                if (hModule)
-                {
-                    g_LdrLoadDll = ::GetProcAddress(
-                        hModule, "LdrLoadDll");
-                    g_RtlNtStatusToDosError = ::GetProcAddress(
-                        hModule, "RtlNtStatusToDosError");
-                    g_RtlWow64EnableFsRedirectionEx = ::GetProcAddress(
-                        hModule, "RtlWow64EnableFsRedirectionEx");
-                    g_RtlInitUnicodeString = ::GetProcAddress(
-                        hModule, "RtlInitUnicodeString");
-                }
-            }
-
-            g_IsTrustedLibraryLoaderInitialized = true;
-        }
-    }
-
-    static bool IsSecureLibraryLoaderAvailable()
-    {
-        return g_IsSecureLibraryLoaderAvailable;
-    }
-
-    static NTSTATUS NTAPI LdrLoadDllWrapper(
-        _In_opt_ PWSTR DllPath,
-        _In_opt_ PULONG DllCharacteristics,
-        _In_ NtUnicodeStringPointer DllName,
-        _Out_ PVOID* DllHandle)
-    {
-        using ProcType = decltype(::LdrLoadDllWrapper)*;
-
-        ProcType ProcAddress = reinterpret_cast<ProcType>(
-            g_LdrLoadDll);
-
-        if (ProcAddress)
-        {
-            return ProcAddress(
-                DllPath,
-                DllCharacteristics,
-                DllName,
-                DllHandle);
-        }
-
-        return ::NtStatusNotImplemented;
-    }
-
-    static ULONG NTAPI RtlNtStatusToDosErrorWrapper(
-        _In_ NTSTATUS Status)
-    {
-        using ProcType = decltype(::RtlNtStatusToDosErrorWrapper)*;
-
-        ProcType ProcAddress = reinterpret_cast<ProcType>(
-            g_RtlNtStatusToDosError);
-
-        if (ProcAddress)
-        {
-            return ProcAddress(Status);
-        }
-
-        return ERROR_PROC_NOT_FOUND;
-    }
-
-    static NTSTATUS NTAPI RtlWow64EnableFsRedirectionExWrapper(
-        _In_ PVOID Wow64FsEnableRedirection,
-        _Out_ PVOID* OldFsRedirectionLevel)
-    {
-        using ProcType = decltype(::RtlWow64EnableFsRedirectionExWrapper)*;
-
-        ProcType ProcAddress = reinterpret_cast<ProcType>(
-            g_RtlWow64EnableFsRedirectionEx);
-
-        if (ProcAddress)
-        {
-            return ProcAddress(
-                Wow64FsEnableRedirection,
-                OldFsRedirectionLevel);
-        }
-
-        return ::NtStatusNotImplemented;
-    }
-
-    static void NTAPI RtlInitUnicodeStringWrapper(
-        _Out_ NtUnicodeStringPointer DestinationString,
-        _In_opt_ PCWSTR SourceString)
-    {
-        using ProcType = decltype(::RtlInitUnicodeStringWrapper)*;
-
-        ProcType ProcAddress = reinterpret_cast<ProcType>(
-            g_RtlInitUnicodeString);
-
-        if (ProcAddress)
-        {
-            ProcAddress(
-                DestinationString,
-                SourceString);
-        }
-    }
-
-#endif
 }
 
 Mile::HResultFromLastError Mile::DeviceIoControl(
@@ -784,70 +642,6 @@ BOOL Mile::IsDotsName(
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
-HMODULE Mile::LoadLibraryFromSystem32(
-    _In_ LPCWSTR lpLibFileName)
-{
-    ::InitializeTrustedLibraryLoader();
-
-    // The secure library loader is available when you using Windows 8 and
-    // later, or you have installed the KB2533623 when you using Windows Vista
-    // and 7.
-    if (::IsSecureLibraryLoaderAvailable())
-    {
-        return ::LoadLibraryExW(
-            lpLibFileName,
-            nullptr,
-            LOAD_LIBRARY_SEARCH_SYSTEM32);
-    }
-
-    // We should re-enable the WoW64 redirection because Windows 7 RTM or
-    // earlier won't re-enable the WoW64 redirection when loading the library.
-    // It's vulnerable if someone put the malicious library under the native
-    // system directory.
-    PVOID OldRedirectionLevel = nullptr;
-    NTSTATUS RedirectionStatus = ::RtlWow64EnableFsRedirectionExWrapper(
-        nullptr,
-        &OldRedirectionLevel);
-
-    wchar_t System32Directory[MAX_PATH];
-    UINT Length = ::GetSystemDirectoryW(System32Directory, MAX_PATH);
-    if (Length == 0 || Length >= MAX_PATH)
-    {
-        // The length of the system directory path string (%windows%\system32)
-        // should be shorter than the MAX_PATH constant.
-        ::SetLastError(ERROR_FUNCTION_FAILED);
-        return nullptr;
-    }
-
-    NtUnicodeString ModuleFileName;
-    ::RtlInitUnicodeStringWrapper(&ModuleFileName, lpLibFileName);
-
-    HMODULE ModuleHandle = nullptr;
-    NTSTATUS Status = ::LdrLoadDllWrapper(
-        System32Directory,
-        nullptr,
-        &ModuleFileName,
-        reinterpret_cast<PVOID*>(&ModuleHandle));
-    if (!IsNtStatusSuccess(Status))
-    {
-        ::SetLastError(::RtlNtStatusToDosErrorWrapper(Status));
-    }
-
-    // Restore the old status of the WoW64 redirection.
-    if (IsNtStatusSuccess(RedirectionStatus))
-    {
-        ::RtlWow64EnableFsRedirectionExWrapper(
-            OldRedirectionLevel,
-            &OldRedirectionLevel);
-    }
-
-    return ModuleHandle;
-}
-
-#endif
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
 BOOL Mile::EnableChildWindowDpiMessage(
     _In_ HWND WindowHandle)
 {
@@ -923,120 +717,6 @@ Mile::HResult Mile::GetDpiForMonitor(
     else
     {
         hr = Mile::HResultFromLastError(FALSE);
-    }
-
-    return hr;
-}
-
-#endif
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-Mile::HResult Mile::StartServiceW(
-    _In_ LPCWSTR ServiceName,
-    _Out_ LPSERVICE_STATUS_PROCESS ServiceStatus)
-{
-    Mile::HResult hr = E_INVALIDARG;
-
-    if (ServiceStatus && ServiceName)
-    {
-        hr = S_OK;
-
-        ::memset(ServiceStatus, 0, sizeof(LPSERVICE_STATUS_PROCESS));
-
-        SC_HANDLE hSCM = ::OpenSCManagerW(
-            nullptr, nullptr, SC_MANAGER_CONNECT);
-        if (hSCM)
-        {
-            SC_HANDLE hService = ::OpenServiceW(
-                hSCM, ServiceName, SERVICE_QUERY_STATUS | SERVICE_START);
-            if (hService)
-            {
-                DWORD nBytesNeeded = 0;
-                DWORD nOldCheckPoint = 0;
-                ULONGLONG nLastTick = 0;
-                bool bStartServiceWCalled = false;
-
-                while (::QueryServiceStatusEx(
-                    hService,
-                    SC_STATUS_PROCESS_INFO,
-                    reinterpret_cast<LPBYTE>(ServiceStatus),
-                    sizeof(SERVICE_STATUS_PROCESS),
-                    &nBytesNeeded))
-                {
-                    if (SERVICE_STOPPED == ServiceStatus->dwCurrentState)
-                    {
-                        // Failed if the service had stopped again.
-                        if (bStartServiceWCalled)
-                        {
-                            hr = S_FALSE;
-                            break;
-                        }
-
-                        hr = Mile::HResultFromLastError(::StartServiceW(
-                            hService, 0, nullptr));
-                        if (hr != S_OK)
-                        {
-                            break;
-                        }
-
-                        bStartServiceWCalled = true;
-                    }
-                    else if (
-                        SERVICE_STOP_PENDING
-                        == ServiceStatus->dwCurrentState ||
-                        SERVICE_START_PENDING
-                        == ServiceStatus->dwCurrentState)
-                    {
-                        ULONGLONG nCurrentTick = ::MileGetTickCount();
-
-                        if (!nLastTick)
-                        {
-                            nLastTick = nCurrentTick;
-                            nOldCheckPoint = ServiceStatus->dwCheckPoint;
-
-                            // Same as the .Net System.ServiceProcess, wait
-                            // 250ms.
-                            ::SleepEx(250, FALSE);
-                        }
-                        else
-                        {
-                            // Check the timeout if the checkpoint is not
-                            // increased.
-                            if (ServiceStatus->dwCheckPoint
-                                <= nOldCheckPoint)
-                            {
-                                ULONGLONG nDiff = nCurrentTick - nLastTick;
-                                if (nDiff > ServiceStatus->dwWaitHint)
-                                {
-                                    hr = Mile::HResult::FromWin32(ERROR_TIMEOUT);
-                                    break;
-                                }
-                            }
-
-                            // Continue looping.
-                            nLastTick = 0;
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-
-                ::CloseServiceHandle(hService);
-            }
-            else
-            {
-                hr = Mile::HResultFromLastError(FALSE);
-            }
-
-            ::CloseServiceHandle(hSCM);
-        }
-        else
-        {
-            hr = Mile::HResultFromLastError(FALSE);
-        }
     }
 
     return hr;
@@ -1591,7 +1271,8 @@ Mile::HResult Mile::OpenServiceProcessToken(
 {
     SERVICE_STATUS_PROCESS ServiceStatus;
 
-    Mile::HResult hr = Mile::StartServiceW(ServiceName, &ServiceStatus);
+    Mile::HResult hr = Mile::HResultFromLastError(
+        ::MileStartService(ServiceName, &ServiceStatus));
     if (hr == S_OK)
     {
         hr = Mile::OpenProcessTokenByProcessId(
@@ -1744,107 +1425,13 @@ std::wstring Mile::GetHResultMessage(
         Message = std::wstring(RawMessage, RawMessageSize);
         if (Value.IsFailed())
         {
-            Message += Mile::FormatUtf16String(L" (0x%08lX)", Value);
+            Message += Mile::FormatWideString(L" (0x%08lX)", Value);
         }
 
         ::LocalFree(RawMessage);
     }
 
     return Message;
-}
-
-std::wstring Mile::ToUtf16String(
-    std::string const& Utf8String)
-{
-    std::wstring Utf16String;
-
-    int Utf16StringLength = ::MultiByteToWideChar(
-        CP_UTF8,
-        0,
-        Utf8String.c_str(),
-        static_cast<int>(Utf8String.size()),
-        nullptr,
-        0);
-    if (Utf16StringLength > 0)
-    {
-        Utf16String.resize(Utf16StringLength);
-        Utf16StringLength = ::MultiByteToWideChar(
-            CP_UTF8,
-            0,
-            Utf8String.c_str(),
-            static_cast<int>(Utf8String.size()),
-            &Utf16String[0],
-            Utf16StringLength);
-        Utf16String.resize(Utf16StringLength);
-    }
-
-    return Utf16String;
-}
-
-std::string Mile::ToUtf8String(
-    std::wstring const& Utf16String)
-{
-    std::string Utf8String;
-
-    int Utf8StringLength = ::WideCharToMultiByte(
-        CP_UTF8,
-        0,
-        Utf16String.data(),
-        static_cast<int>(Utf16String.size()),
-        nullptr,
-        0,
-        nullptr,
-        nullptr);
-    if (Utf8StringLength > 0)
-    {
-        Utf8String.resize(Utf8StringLength);
-        Utf8StringLength = ::WideCharToMultiByte(
-            CP_UTF8,
-            0,
-            Utf16String.data(),
-            static_cast<int>(Utf16String.size()),
-            &Utf8String[0],
-            Utf8StringLength,
-            nullptr,
-            nullptr);
-        Utf8String.resize(Utf8StringLength);
-    }
-
-    return Utf8String;
-}
-
-std::string Mile::ToConsoleString(
-    std::wstring const& Utf16String)
-{
-    std::string ConsoleString;
-
-    UINT CurrentCodePage = ::GetConsoleOutputCP();
-
-    int ConsoleStringLength = ::WideCharToMultiByte(
-        CurrentCodePage,
-        0,
-        Utf16String.data(),
-        static_cast<int>(Utf16String.size()),
-        nullptr,
-        0,
-        nullptr,
-        nullptr);
-    if (ConsoleStringLength > 0)
-    {
-        ConsoleString.resize(ConsoleStringLength);
-        ConsoleStringLength = ::WideCharToMultiByte(
-            CurrentCodePage,
-            0,
-            Utf16String.data(),
-            static_cast<int>(Utf16String.size()),
-            &ConsoleString[0],
-            ConsoleStringLength,
-            nullptr,
-            nullptr);
-        ConsoleString.resize(ConsoleStringLength);
-    }
-
-    return ConsoleString;
 }
 
 std::wstring Mile::GetSystemDirectoryW()
@@ -1912,94 +1499,6 @@ std::wstring Mile::GetCurrentProcessModulePath()
     return Path;
 }
 
-std::wstring Mile::VFormatUtf16String(
-    _In_z_ _Printf_format_string_ wchar_t const* const Format,
-    _In_z_ _Printf_format_string_ va_list ArgList)
-{
-    // Check the argument list.
-    if (Format)
-    {
-        // Get the length of the format result.
-        size_t nLength = static_cast<size_t>(_vscwprintf(Format, ArgList)) + 1;
-
-        // Allocate for the format result.
-        std::wstring Buffer(nLength + 1, L'\0');
-
-        // Format the string.
-        int nWritten = _vsnwprintf_s(
-            &Buffer[0],
-            Buffer.size(),
-            nLength,
-            Format,
-            ArgList);
-
-        if (nWritten > 0)
-        {
-            // If succeed, resize to fit and return result.
-            Buffer.resize(nWritten);
-            return Buffer;
-        }
-    }
-
-    // If failed, return an empty string.
-    return L"";
-}
-
-std::string Mile::VFormatUtf8String(
-    _In_z_ _Printf_format_string_ char const* const Format,
-    _In_z_ _Printf_format_string_ va_list ArgList)
-{
-    // Check the argument list.
-    if (Format)
-    {
-        // Get the length of the format result.
-        size_t nLength = static_cast<size_t>(_vscprintf(Format, ArgList)) + 1;
-
-        // Allocate for the format result.
-        std::string Buffer(nLength + 1, '\0');
-
-        // Format the string.
-        int nWritten = _vsnprintf_s(
-            &Buffer[0],
-            Buffer.size(),
-            nLength,
-            Format,
-            ArgList);
-
-        if (nWritten > 0)
-        {
-            // If succeed, resize to fit and return result.
-            Buffer.resize(nWritten);
-            return Buffer;
-        }
-    }
-
-    // If failed, return an empty string.
-    return "";
-}
-
-std::wstring Mile::FormatUtf16String(
-    _In_z_ _Printf_format_string_ wchar_t const* const Format,
-    ...)
-{
-    va_list ArgList;
-    va_start(ArgList, Format);
-    std::wstring Result = Mile::VFormatUtf16String(Format, ArgList);
-    va_end(ArgList);
-    return Result;
-}
-
-std::string Mile::FormatUtf8String(
-    _In_z_ _Printf_format_string_ char const* const Format,
-    ...)
-{
-    va_list ArgList;
-    va_start(ArgList, Format);
-    std::string Result = Mile::VFormatUtf8String(Format, ArgList);
-    va_end(ArgList);
-    return Result;
-}
-
 std::wstring Mile::ConvertByteSizeToUtf16String(
     std::uint64_t ByteSize)
 {
@@ -2034,22 +1533,22 @@ std::wstring Mile::ConvertByteSizeToUtf16String(
         result = static_cast<uint64_t>(result * 100) / 100.0;
     }
 
-    return Mile::FormatUtf16String(L"%.1lf %s", result, Systems[nSystem]);
+    return Mile::FormatWideString(L"%.1lf %s", result, Systems[nSystem]);
 }
 
 std::string Mile::ConvertByteSizeToUtf8String(
     std::uint64_t ByteSize)
 {
-    const wchar_t* Systems[] =
+    const char* Systems[] =
     {
-        L"Byte",
-        L"Bytes",
-        L"KiB",
-        L"MiB",
-        L"GiB",
-        L"TiB",
-        L"PiB",
-        L"EiB"
+        "Byte",
+        "Bytes",
+        "KiB",
+        "MiB",
+        "GiB",
+        "TiB",
+        "PiB",
+        "EiB"
     };
 
     size_t nSystem = 0;
@@ -2071,7 +1570,7 @@ std::string Mile::ConvertByteSizeToUtf8String(
         result = static_cast<uint64_t>(result * 100) / 100.0;
     }
 
-    return Mile::FormatUtf8String("%.1lf %s", result, Systems[nSystem]);
+    return Mile::FormatString("%.1lf %s", result, Systems[nSystem]);
 }
 
 #pragma endregion

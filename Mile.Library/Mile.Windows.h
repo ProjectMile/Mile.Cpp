@@ -14,6 +14,7 @@
 #include "Mile.Portable.h"
 
 #include <Mile.Helpers.h>
+#include <Mile.Helpers.CppBase.h>
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 #include <ShellScalingApi.h>
@@ -1439,43 +1440,6 @@ namespace Mile
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
 
     /**
-     * @brief Loads the specified module in the system directory into the
-     *        address space of the calling process. The specified module may
-     *        cause other modules to be loaded.
-     * @param lpLibFileName The name of the module. This can be either a
-     *                      library module (a .dll file) or an executable
-     *                      module (an .exe file). The name specified is the
-     *                      file name of the module and is not related to the
-     *                      name stored in the library module itself, as
-     *                      specified by the LIBRARY keyword in the
-     *                      module-definition (.def) file.
-     *                      If the string specifies a full path, the function
-     *                      searches only that path for the module.
-     *                      If the string specifies a relative path or a module
-     *                      name without a path, the function uses a standard
-     *                      search strategy to find the module.
-     *                      If the function cannot find the module, the
-     *                      function fails. When specifying a path, be sure to
-     *                      use backslashes (\), not forward slashes (/).
-     *                      If the string specifies a module name without a
-     *                      path and the file name extension is omitted, the
-     *                      function appends the default library extension .dll
-     *                      to the module name. To prevent the function from
-     *                      appending .dll to the module name, include a
-     *                      trailing point character (.) in the module name
-     *                      string.
-     * @return If the function succeeds, the return value is a handle to the
-     *         module. If the function fails, the return value is nullptr. To
-     *         get extended error information, call GetLastError.
-    */
-    HMODULE LoadLibraryFromSystem32(
-        _In_ LPCWSTR lpLibFileName);
-
-#endif
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-    /**
      * @brief Enables WM_DPICHANGED message for child window for the associated
      *        window.
      * @param WindowHandle The window you want to enable WM_DPICHANGED message
@@ -1511,31 +1475,6 @@ namespace Mile
         _In_ MONITOR_DPI_TYPE dpiType,
         _Out_ UINT* dpiX,
         _Out_ UINT* dpiY);
-
-#endif
-
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM)
-
-    /**
-     * @brief Starts a service if not started and retrieves the current status
-     *        of the specified service.
-     * @param ServiceName The name of the service to be started. This is the
-     *                    name specified by the ServiceName parameter of the
-     *                    CreateService function when the service object was
-     *                    created, not the service display name that is shown
-     *                    by user interface applications to identify the
-     *                    service. The maximum string length is 256 characters.
-     *                    The service control manager database preserves the
-     *                    case of the characters, but service name comparisons
-     *                    are always case insensitive. Forward-slash (/) and
-     *                    backslash (\) are invalid service name characters.
-     * @param ServiceStatus A pointer to the process status information for a
-     *                      service.
-     * @return An HResult object containing the error code.
-    */
-    HResult StartServiceW(
-        _In_ LPCWSTR ServiceName,
-        _Out_ LPSERVICE_STATUS_PROCESS ServiceStatus);
 
 #endif
 
@@ -1859,34 +1798,6 @@ namespace Mile
         HResult const& Value);
 
     /**
-     * @brief Converts from the UTF-8 string to the UTF-16 string.
-     * @param Utf8String The UTF-8 string you want to convert.
-     * @return A converted UTF-16 string if successful, an empty string
-     *         otherwise.
-    */
-    std::wstring ToUtf16String(
-        std::string const& Utf8String);
-
-    /**
-     * @brief Converts from the UTF-16 string to the UTF-8 string.
-     * @param Utf16String The UTF-16 string you want to convert.
-     * @return A converted UTF-8 string if successful, an empty string
-     *         otherwise.
-    */
-    std::string ToUtf8String(
-        std::wstring const& Utf16String);
-
-    /**
-     * @brief Converts from the UTF-16 string to the string encoded with the
-     *        console code page.
-     * @param Utf16String The UTF-16 string you want to convert.
-     * @return A converted string encoded with the console code page if
-     *         successful, an empty string otherwise.
-    */
-    std::string ToConsoleString(
-        std::wstring const& Utf16String);
-
-    /**
      * @brief Retrieves the path of the system directory. The system directory
      *        contains system files such as dynamic-link libraries and drivers.
      * @return The path of the system directory if successful, an empty string
@@ -1968,46 +1879,6 @@ namespace Mile
             dwCreationFlags,
             lpThreadId);
     }
-
-    /**
-     * @brief Write formatted data to a UTF-16 string.
-     * @param Format Format-control string.
-     * @param ArgList Pointer to list of optional arguments to be formatted.
-     * @return A formatted string if successful, an empty string otherwise.
-    */
-    std::wstring VFormatUtf16String(
-        _In_z_ _Printf_format_string_ wchar_t const* const Format,
-        _In_z_ _Printf_format_string_ va_list ArgList);
-
-    /**
-     * @brief Write formatted data to a UTF-8 string.
-     * @param Format Format-control string.
-     * @param ArgList Pointer to list of optional arguments to be formatted.
-     * @return A formatted string if successful, an empty string otherwise.
-    */
-    std::string VFormatUtf8String(
-        _In_z_ _Printf_format_string_ char const* const Format,
-        _In_z_ _Printf_format_string_ va_list ArgList);
-
-    /**
-     * @brief Write formatted data to a UTF-16 string.
-     * @param Format Format-control string.
-     * @param ... Optional arguments to be formatted.
-     * @return A formatted string if successful, an empty string otherwise.
-    */
-    std::wstring FormatUtf16String(
-        _In_z_ _Printf_format_string_ wchar_t const* const Format,
-        ...);
-
-    /**
-     * @brief Write formatted data to a UTF-8 string.
-     * @param Format Format-control string.
-     * @param ... Optional arguments to be formatted.
-     * @return A formatted string if successful, an empty string otherwise.
-    */
-    std::string FormatUtf8String(
-        _In_z_ _Printf_format_string_ char const* const Format,
-        ...);
 
     /**
      * @brief Converts a numeric value into a UTF-16 string that represents
