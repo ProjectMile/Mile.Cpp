@@ -17,6 +17,8 @@
 #error "[Mile] You should use a C++ compiler with the C++14 standard."
 #endif
 
+#include <Mile.Helpers.CppBase.h>
+
 #include <map>
 #include <string>
 #include <utility>
@@ -35,38 +37,6 @@ namespace Mile
     void UnreferencedParameter(VariableType const&)
     {
     }
-
-    /**
-     * @brief Disables C++ class copy construction.
-    */
-    class DisableCopyConstruction
-    {
-    protected:
-        DisableCopyConstruction() = default;
-        ~DisableCopyConstruction() = default;
-
-    private:
-        DisableCopyConstruction(
-            const DisableCopyConstruction&) = delete;
-        DisableCopyConstruction& operator=(
-            const DisableCopyConstruction&) = delete;
-    };
-
-    /**
-     * @brief Disables C++ class move construction.
-    */
-    class DisableMoveConstruction
-    {
-    protected:
-        DisableMoveConstruction() = default;
-        ~DisableMoveConstruction() = default;
-
-    private:
-        DisableMoveConstruction(
-            const DisableMoveConstruction&&) = delete;
-        DisableMoveConstruction& operator=(
-            const DisableMoveConstruction&&) = delete;
-    };
 
     /**
      * @brief The template for defining the unique objects.
@@ -222,67 +192,6 @@ namespace Mile
             std::swap(Left.m_Value, Right.m_Value);
         }
     };
-
-    /**
-     * @brief The template for defining the task when exit the scope.
-     * @tparam TaskHandlerType The type of the task handler.
-     * @remark For more information, see ScopeGuard.
-    */
-    template<typename TaskHandlerType>
-    class ScopeExitTaskHandler :
-        DisableCopyConstruction,
-        DisableMoveConstruction
-    {
-    private:
-        bool m_Canceled;
-        TaskHandlerType m_TaskHandler;
-
-    public:
-
-        /**
-         * @brief Creates the instance for the task when exit the scope.
-         * @param TaskHandler The instance of the task handler.
-        */
-        explicit ScopeExitTaskHandler(TaskHandlerType&& EventHandler) :
-            m_Canceled(false),
-            m_TaskHandler(std::forward<TaskHandlerType>(EventHandler))
-        {
-
-        }
-
-        /**
-         * @brief Executes and uninitializes the instance for the task when
-         *        exit the scope.
-        */
-        ~ScopeExitTaskHandler()
-        {
-            if (!this->m_Canceled)
-            {
-                this->m_TaskHandler();
-            }
-        }
-
-        /**
-         * @brief Cancels the task when exit the scope.
-        */
-        void Cancel()
-        {
-            this->m_Canceled = true;
-        }
-    };
-
-    /**
-     * @brief Parses a command line string and returns an array of the command
-     *        line arguments, along with a count of such arguments, in a way
-     *        that is similar to the standard C run-time.
-     * @param CommandLine A string that contains the full command line. If this
-     *                    parameter is an empty string the function returns an
-     *                    array with only one empty string.
-     * @return An array of the command line arguments, along with a count of such
-     *         arguments.
-    */
-    std::vector<std::wstring> SpiltCommandLine(
-        std::wstring const& CommandLine);
 
     /**
      * @brief Parses a command line string and get more friendly result.
