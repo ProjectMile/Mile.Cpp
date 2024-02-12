@@ -3,7 +3,4 @@
   <ItemGroup>
     <ClCompile Include="SimpleNativeProject.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="MINT.h" />
-  </ItemGroup>
 </Project>

@@ -8,7 +8,7 @@
  * DEVELOPER: MouriNaruto (KurikoMouri@outlook.jp)
  */
 
-#include "MINT.h"
+#include <Mint.h>
 
 void EntryPoint()
 {
