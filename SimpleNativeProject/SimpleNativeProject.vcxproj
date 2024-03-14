@@ -37,8 +37,8 @@
     <ClCompile Include="SimpleNativeProject.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Chuyu.Mint">
-      <Version>2024.1.0</Version>
+    <PackageReference Include="Mile.Windows.Internal">
+      <Version>1.0.2818</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\Mile.Project.Windows\Mile.Project.Cpp.targets" />
